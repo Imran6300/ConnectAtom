@@ -1,0 +1,141 @@
+/* ConnectAtom brand theme v1.0
+   Dark-first marketing site + light dashboard. All text pairings below meet WCAG AA (4.5:1).
+   Fonts: Space Grotesk (display), Inter (body/UI), JetBrains Mono (data). All SIL Open Font Licence. */
+
+:root {
+  /* ---- Brand palette ---- */
+  --ca-ink: #0A1622;          /* Deep Space */
+  --ca-surface: #112536;      /* raised surface on dark */
+  --ca-surface-2: #18324A;    /* higher surface on dark */
+  --ca-teal: #14D1BC;         /* Atom Teal: accent on dark */
+  --ca-teal-600: #0A8F80;     /* graphics on light */
+  --ca-teal-700: #087A6E;     /* text and buttons on light (5.2:1 on white) */
+  --ca-teal-800: #066A5F;     /* hover on light */
+  --ca-amber: #FFB224;        /* Signal Amber */
+  --ca-red: #F0524F;
+  --ca-green: #2BC77A;
+  --ca-mist: #F4F8FA;
+  --ca-cloud: #E3EBF0;
+  --ca-slate: #566879;
+  --ca-graphite: #2B3B4A;
+
+  /* ---- Type ---- */
+  --font-display: var(--f-display), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--f-body), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--f-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ---- Shape, space, motion ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 140ms; --dur: 220ms; --dur-slow: 420ms;
+  --focus-ring: 0 0 0 3px rgba(20, 209, 188, 0.45);
+}
+
+/* ---- Light theme (default: dashboard, docs, forms) ---- */
+:root, [data-theme="light"] {
+  --bg: var(--ca-mist);
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: var(--ca-cloud);
+  --text: var(--ca-ink);
+  --text-body: var(--ca-graphite);
+  --text-muted: var(--ca-slate);
+  --accent: var(--ca-teal-700);        /* links, primary buttons */
+  --accent-hover: var(--ca-teal-800);
+  --accent-contrast: #FFFFFF;          /* text on accent */
+  --accent-graphic: var(--ca-teal-600);
+  --ok-text: #157A47;       --ok-bg: #E6F6EE;
+  --warn-text: #8A5300;     --warn-bg: #FFF1D6;
+  --crit-text: #C2362F;     --crit-bg: #FDE8E7;
+  --shadow-card: 0 1px 2px rgba(10, 22, 34, 0.06), 0 8px 24px rgba(10, 22, 34, 0.06);
+  --chart-1: #0A8F80; --chart-2: #3B82F6; --chart-3: #F59E0B;
+  --chart-4: #8B5CF6; --chart-5: #EF4444; --chart-6: #64748B;
+}
+
+/* ---- Dark theme (marketing hero, footers, status screens) ---- */
+[data-theme="dark"] {
+  --bg: var(--ca-ink);
+  --surface: var(--ca-surface);
+  --surface-raised: var(--ca-surface-2);
+  --border: rgba(255, 255, 255, 0.09);
+  --text: var(--ca-mist);
+  --text-body: #C9D6E0;
+  --text-muted: #9FB3C3;               /* 8.4:1 on ink */
+  --accent: var(--ca-teal);
+  --accent-hover: #3BE0CD;
+  --accent-contrast: var(--ca-ink);    /* 9.5:1 on teal */
+  --accent-graphic: var(--ca-teal);
+  --ok-text: #2BC77A;       --ok-bg: rgba(43, 199, 122, 0.14);
+  --warn-text: #FFB224;     --warn-bg: rgba(255, 178, 36, 0.14);
+  --crit-text: #FF7A77;     --crit-bg: rgba(240, 82, 79, 0.16);
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --chart-1: #14D1BC; --chart-2: #5B9DFF; --chart-3: #FFB224;
+  --chart-4: #A78BFA; --chart-5: #FF7A77; --chart-6: #94A3B8;
+}
+
+/* ---- Base ---- */
+html { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-body);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text); letter-spacing: -0.02em; margin: 0 0 var(--space-3); }
+.display { font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
+h1 { font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.1; font-weight: 700; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2; font-weight: 700; }
+h3 { font-size: 1.25rem; line-height: 1.3; font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ---- Components ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-md);
+  font: 600 0.95rem var(--font-body); border: 1px solid transparent; cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--accent-contrast); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { border-color: var(--accent-graphic); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-5); box-shadow: var(--shadow-card);
+}
+.input {
+  height: 44px; width: 100%; padding: 0 var(--space-4); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); font: 400 1rem var(--font-body);
+}
+.input:focus { border-color: var(--accent-graphic); box-shadow: var(--focus-ring); outline: none; }
+
+/* Status badges: always pair colour with an icon or word, never colour alone */
+.badge { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font: 600 0.78rem var(--font-body); }
+.badge-ok   { color: var(--ok-text);   background: var(--ok-bg); }
+.badge-warn { color: var(--warn-text); background: var(--warn-bg); }
+.badge-crit { color: var(--crit-text); background: var(--crit-bg); }
+
+/* Live status dot with a soft ping (respects reduced motion) */
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok-text); position: relative; display: inline-block; }
+.live-dot::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--ok-text); opacity: 0; animation: ca-ping 2s var(--ease) infinite; }
+@keyframes ca-ping { 0% { transform: scale(0.6); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .live-dot::after { animation: none; } * { transition-duration: 0.01ms !important; } }
+
+/* Hero / section backdrop: faint PCB grid. Use with data-theme="dark". */
+.circuit-bg {
+  background-color: var(--ca-ink);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1.2px, transparent 0),
+    radial-gradient(60% 50% at 80% 0%, rgba(20, 209, 188, 0.14), transparent 70%);
+  background-size: 30px 30px, 100% 100%;
+}

@@ -1,0 +1,20 @@
+"use client";
+import { useState } from "react";
+import { PageHeader, useFetch, Loading, ErrorNote, StatusBadge, ago } from "@/components/portal/ui";
+import { api, toApiError } from "@/lib/api";
+
+type D = { id: string; deviceId: string; typeKey: string; state: string; batch?: string; fwVersion?: string; connection: string; lastSeen?: string; revoked: boolean; tenant?: string; name?: string };
+type Out = { deviceId: string; secret: string; claimCode: string };
+
+export default function Page() {
+  const list = useFetch<D[]>("/admin/devices"); const types = useFetch<{ key: string; name: string }[]>("/admin/device-types"); const [err, setErr] = useState(""); const [out, setOut] = useState<Out[]>([]);
+  async function prov(e: React.FormEvent<HTMLFormElement>) { e.preventDefault(); const d = new FormData(e.currentTarget); setErr(""); try { setOut((await api.post<{ devices: Out[] }>("/admin/devices/provision", { typeKey: d.get("typeKey"), count: Number(d.get("count")), batch: d.get("batch") || undefined })).data.devices); list.reload(); } catch (ex) { setErr(toApiError(ex).message); } }
+  const act = async (fn: () => Promise<{ data: { secret?: string; claimCode?: string } }>) => { try { const r = await fn(); if (r.data.secret) alert(`New secret (shown once):\n${r.data.secret}`); list.reload(); } catch (ex) { setErr(toApiError(ex).message); } };
+  const csv = out.length ? "data:text/csv;charset=utf-8," + encodeURIComponent("device_id,secret,claim_code\n" + out.map((o) => `${o.deviceId},${o.secret},${o.claimCode}`).join("\n")) : "";
+  return (<><PageHeader title="Fleet" sub="Provision devices, then flash the secret and print the claim code on the label." /><ErrorNote msg={err} />
+    <form onSubmit={prov} className="card mb-6 grid gap-3 sm:grid-cols-4"><div><label className="label" htmlFor="typeKey">Product</label><select id="typeKey" name="typeKey" className="input">{types.data?.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}</select></div><div><label className="label" htmlFor="count">How many</label><input id="count" name="count" type="number" min={1} max={100} defaultValue={1} className="input" /></div><div><label className="label" htmlFor="batch">Batch</label><input id="batch" name="batch" className="input" /></div><div className="flex items-end"><button className="btn btn-primary w-full">Provision</button></div></form>
+    {!!out.length && <div className="card mb-6"><h3>Secrets, shown once</h3><p className="text-sm">Download now. They cannot be shown again.</p><a className="btn btn-primary no-underline" href={csv} download="provisioned-devices.csv">Download CSV</a><table className="table-ca mono mt-3 w-full text-xs"><tbody>{out.map((o) => <tr key={o.deviceId}><td>{o.deviceId}</td><td>{o.claimCode}</td></tr>)}</tbody></table></div>}
+    {list.loading ? <Loading /> : <div className="card overflow-x-auto !p-0"><table className="table-ca w-full"><thead><tr><th>Serial</th><th>State</th><th>Customer</th><th>Status</th><th>Seen</th><th /></tr></thead>
+      <tbody>{list.data?.map((d) => <tr key={d.id}><td className="mono">{d.deviceId}<div className="text-xs">{d.typeKey}{d.batch ? ` · ${d.batch}` : ""}</div></td><td>{d.revoked ? <span className="badge badge-crit">Revoked</span> : d.state}</td><td>{d.tenant ?? "-"}</td><td>{d.state !== "stock" && <StatusBadge connection={d.connection} />}</td><td>{ago(d.lastSeen)}</td>
+        <td><div className="flex gap-3 text-sm">{!d.revoked && <button style={{ color: "var(--accent)" }} onClick={() => act(() => api.post(`/admin/devices/${d.id}/rotate-secret`))}>New secret</button>}{d.tenant && <button style={{ color: "var(--accent)" }} onClick={() => confirm("Return this device to stock?") && act(async () => { const r = await api.post<{ claimCode: string }>(`/admin/devices/${d.id}/unclaim`); alert(`New claim code: ${r.data.claimCode}`); return r; })}>Unclaim</button>}{!d.revoked && <button style={{ color: "var(--crit-text)" }} onClick={() => confirm("Revoke this device? It will stop being accepted.") && act(() => api.post(`/admin/devices/${d.id}/revoke`))}>Revoke</button>}</div></td></tr>)}</tbody></table></div>}</>);
+}

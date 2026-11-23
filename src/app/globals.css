@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-[1160px] px-4 sm:px-6; }
+  .section { @apply py-14 sm:py-20; }
+  .section-title { @apply mb-3; }
+  .lede { @apply text-[1.05rem] leading-7 text-[color:var(--text-body)] max-w-[62ch]; }
+  .prose-ca p { @apply mb-4 leading-7; }
+  .prose-ca h2 { @apply mt-10 mb-3; }
+  .prose-ca h3 { @apply mt-6 mb-2; }
+  .prose-ca ul { @apply mb-4 list-disc pl-6 space-y-1; }
+  .prose-ca ol { @apply mb-4 list-decimal pl-6 space-y-1; }
+  .table-ca { @apply w-full border-collapse text-sm; }
+  .table-ca th { @apply text-left font-semibold px-3 py-2 bg-[color:var(--ca-ink)] text-[color:var(--ca-mist)]; }
+  .table-ca td { @apply px-3 py-2 border-b border-[color:var(--border)] align-top; }
+  .table-ca tbody tr:nth-child(even) td { @apply bg-[color:var(--ca-mist)]; }
+  .label { @apply mb-1 block text-sm font-medium text-[color:var(--text)]; }
+  .field-error { @apply mt-1 text-sm text-[color:var(--crit-text)]; }
+}
+
+[data-theme="dark"] .table-ca td { background: transparent; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+select.input { appearance: auto; }
+textarea.input { height: auto; padding-top: 10px; padding-bottom: 10px; min-height: 96px; }
+.skip-link { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--ca-teal); color: var(--ca-ink); padding: 8px 12px; border-radius: 8px; }
+.skip-link:focus { left: 8px; }
