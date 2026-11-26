@@ -6,6 +6,7 @@ import { api, toApiError } from "@/lib/api";
 import { useAppDispatch } from "@/store/StoreProvider";
 import { login, register, setSession } from "@/store/authSlice";
 import type { Session } from "@/lib/server-auth";
+import { trackEvent } from "@/lib/analytics";
 
 const Err = ({ f, k }: { f: Record<string, string>; k: string }) => (f[k] ? <p className="field-error" role="alert">{f[k]}</p> : null);
 
@@ -22,7 +23,7 @@ function LoginInner() {
   const [err, setErr] = useState(""); const [busy, setBusy] = useState(false); const [f, setF] = useState<Record<string, string>>({});
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); const d = new FormData(e.currentTarget); setBusy(true); setErr(""); setF({});
-    try { const s = await dispatch(login({ email: String(d.get("email")), password: String(d.get("password")) })).unwrap(); router.push(landing(s, sp.get("next"))); router.refresh(); }
+    try { const s = await dispatch(login({ email: String(d.get("email")), password: String(d.get("password")) })).unwrap(); trackEvent("login", { method: "email" }); router.push(landing(s, sp.get("next"))); router.refresh(); }
     catch (ex) { setErr(typeof ex === "string" ? ex : "Could not sign in."); } finally { setBusy(false); }
   }
   return (
@@ -49,6 +50,7 @@ function RegisterInner() {
     e.preventDefault(); const d = new FormData(e.currentTarget); setBusy(true); setErr(""); setF({});
     try {
       await dispatch(register({ name: d.get("name"), email: d.get("email"), password: d.get("password"), companyName: d.get("companyName") || undefined, phone: d.get("phone") || undefined, inviteToken: invite || undefined })).unwrap();
+      trackEvent("sign_up", { method: "email", invited: !!invite });
       router.push("/dashboard"); router.refresh();
     } catch (ex) { setErr(typeof ex === "string" ? ex : "Could not create the account."); } finally { setBusy(false); }
   }

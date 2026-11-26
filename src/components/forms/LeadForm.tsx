@@ -5,6 +5,7 @@ import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recapt
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { api, toApiError } from "@/lib/api";
 import { readOrigin, getFlag } from "@/lib/attribution";
+import { trackEvent } from "@/lib/analytics";
 
 type Kind = "quote" | "pilot" | "callback" | "contact";
 type Props = { kind?: Kind; productSlug?: string; industrySlug?: string; citySlug?: string; heading?: string; cta?: string; compact?: boolean; contextLabel?: string; products?: { slug: string; name: string }[] };
@@ -49,9 +50,12 @@ function Inner({ kind = "quote", productSlug, industrySlug, citySlug, cta, compa
           usedTool: getFlag("usedTool"), downloadedDatasheet: getFlag("downloadedDatasheet"),
         },
       });
+      // GA4 recommended conversion event. No name, phone or email is ever sent to analytics.
+      trackEvent("generate_lead", { lead_kind: kind, product_slug: v("product") || productSlug, industry_slug: industrySlug, page_path: path, used_tool: getFlag("usedTool") });
       router.push(`/thank-you?kind=${kind}`);
     } catch (ex) {
       const a = toApiError(ex); setErr(a.message); if (a.fields) setFields(a.fields);
+      trackEvent("lead_form_error", { lead_kind: kind, page_path: path, status: a.status });
     } finally { setBusy(false); }
   }
 

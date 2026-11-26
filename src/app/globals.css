@@ -55,8 +55,11 @@ textarea.input { height: auto; padding-top: 10px; padding-bottom: 10px; min-heig
 .chip-solid { background: var(--sector-soft, rgba(20,209,188,.14)); border-color: transparent; color: var(--text); }
 .kicker { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
 .hero-fade { background: linear-gradient(90deg, var(--ca-ink) 0%, var(--ca-ink) 38%, rgba(10,22,52,0) 78%); }
-.mega { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility var(--dur); }
-.group:hover > .mega, .group:focus-within > .mega { visibility: visible; opacity: 1; transform: none; }
+/* Nav dropdown panels. State comes from data-open (set by DesktopNav), not :hover, so mouse, touch and keyboard all work.
+   Keep Tailwind transform utilities (-translate-x-1/2 etc.) OFF .mega elements: this rule owns `transform`. */
+.mega { visibility: hidden; opacity: 0; pointer-events: none; transform: translateY(6px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s linear var(--dur); }
+.mega[data-open="true"] { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition-delay: 0s; }
+@media (prefers-reduced-motion: reduce) { .mega, .mega[data-open="true"] { transition: none; transform: none; } }
 .spec-chip { display: inline-block; font: 600 .68rem var(--font-mono); letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
 .spec-confirmed { background: var(--ok-bg); color: var(--ok-text); }
 .spec-design-target { background: var(--warn-bg); color: var(--warn-text); }
@@ -68,7 +71,6 @@ textarea.input { height: auto; padding-top: 10px; padding-bottom: 10px; min-heig
 .prose-ca p, .prose-ca li { color: var(--text-body); }
 img, svg { max-width: 100%; }
 html, body { overflow-x: clip; }
-.mega { pointer-events: none; } .group:hover > .mega, .group:focus-within > .mega { pointer-events: auto; }
 .prose-ca table, .prose-ca .table-ca { max-width: 100%; }
 .container-x .container-x { padding-left: 0; padding-right: 0; max-width: none; }
 @media (max-width: 639px) { .hide-xs { display: none !important; } }

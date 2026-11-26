@@ -5,6 +5,7 @@ import "./brand.css";
 import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { organization, website } from "@/lib/seo/jsonld";
+import { Analytics } from "@/components/analytics/Analytics";
 
 const display = localFont({ src: "../fonts/space-grotesk-latin-wght-normal.woff2", variable: "--f-display", weight: "300 700", display: "swap" });
 const body = localFont({ src: "../fonts/inter-latin-wght-normal.woff2", variable: "--f-body", weight: "100 900", display: "swap" });
@@ -23,7 +24,7 @@ export const viewport: Viewport = { themeColor: "#0A1622", width: "device-width"
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body><JsonLd data={[organization(), website()]} />{children}</body>
+      <body><JsonLd data={[organization(), website()]} />{children}<Analytics /></body>
     </html>
   );
 }
