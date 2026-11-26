@@ -1,59 +1,62 @@
-"use client";
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { LIVE_PRODUCTS } from "@/content/products";
-import { LIVE_INDUSTRIES } from "@/content/industries";
+import { MobileNav, type NavGroup } from "./MobileNav";
+import { getSite } from "@/lib/catalogue/site";
+import { SECTORS, SECTOR_META } from "@/lib/catalogue/types";
 
-const NAV = [{ href: "/how-it-works", label: "How it works" }, { href: "/pricing", label: "Pricing" }, { href: "/tools", label: "Tools" }];
-
-function Mega({ label, href, items }: { label: string; href: string; items: { href: string; label: string }[] }) {
-  return (
+// Mega menus are generated from the registry: a new product, industry, application or guide appears here with no edit.
+export async function Header() {
+  const site = await getSite();
+  const prodCols = SECTORS.map((s) => ({ key: s, label: SECTOR_META[s].label, links: site.sectorProducts(s).map((p) => ({ href: `/products/${p.slug}`, label: p.name })) })).filter((c) => c.links.length);
+  const indCols = SECTORS.map((s) => ({ key: s, label: SECTOR_META[s].label, links: site.sectorIndustries(s).map((i) => ({ href: `/industries/${i.slug}`, label: i.name })) })).filter((c) => c.links.length);
+  const apps = site.applications.slice(0, 8).map((a) => ({ href: `/applications/${a.slug}`, label: a.name }));
+  const guides = site.resources.filter((r) => r.type !== "glossary").slice(0, 8).map((r) => ({ href: `/resources/${r.slug}`, label: r.title }));
+  const groups: NavGroup[] = [
+    { title: "Products", href: "/products", links: prodCols.flatMap((c) => c.links) },
+    { title: "Industries", href: "/industries", links: indCols.flatMap((c) => c.links) },
+    ...(apps.length ? [{ title: "Applications", href: "/applications", links: apps }] : []),
+    ...(guides.length ? [{ title: "Resources", href: "/resources", links: guides }] : []),
+  ];
+  const top = "flex items-center gap-1 px-3 py-5 text-sm no-underline";
+  const Mega = ({ label, href, cols }: { label: string; href: string; cols: { key: string; label: string; links: { href: string; label: string }[] }[] }) => (
     <div className="group relative">
-      <Link href={href} className="flex items-center gap-1 px-3 py-2 text-sm no-underline" style={{ color: "var(--text-body)" }}>
-        {label} <ChevronDown size={14} aria-hidden />
-      </Link>
-      <div className="invisible absolute left-0 top-full z-50 w-[300px] pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-        <ul className="card !p-2" style={{ background: "var(--surface-raised)" }}>
-          {items.map((i) => (
-            <li key={i.href}><Link href={i.href} className="block rounded-md px-3 py-2 text-sm no-underline hover:bg-white/5" style={{ color: "var(--text)" }}>{i.label}</Link></li>
+      <Link href={href} className={top} style={{ color: "var(--text-body)" }}>{label}<ChevronDown size={14} aria-hidden /></Link>
+      <div className="mega absolute left-1/2 top-full z-50 w-[min(1040px,92vw)] -translate-x-1/2 pt-0">
+        <div className="card grid gap-6 !p-6 lg:grid-cols-4" style={{ background: "var(--surface-raised)" }}>
+          {cols.map((c) => (
+            <div key={c.key} data-sector={c.key}>
+              <p className="kicker mb-2 flex items-center gap-2"><span className="sector-dot h-2 w-2 rounded-full" />{c.label}</p>
+              <ul className="space-y-0.5">{c.links.map((l) => <li key={l.href}><Link href={l.href} className="block rounded-md px-2 py-1 text-[0.86rem] no-underline hover:bg-white/5" style={{ color: "var(--text)" }}>{l.label}</Link></li>)}</ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
-}
-
-export function Header() {
-  const [open, setOpen] = useState(false);
-  const products = LIVE_PRODUCTS.map((p) => ({ href: `/products/${p.slug}`, label: p.name }));
-  const industries = LIVE_INDUSTRIES.map((i) => ({ href: `/industries/${i.slug}`, label: i.name }));
+  const Simple = ({ label, href, links }: { label: string; href: string; links: { href: string; label: string }[] }) => (
+    <div className="group relative">
+      <Link href={href} className={top} style={{ color: "var(--text-body)" }}>{label}<ChevronDown size={14} aria-hidden /></Link>
+      <div className="mega absolute left-0 top-full z-50 w-[340px]"><ul className="card !p-2" style={{ background: "var(--surface-raised)" }}>{links.map((l) => <li key={l.href}><Link href={l.href} className="block rounded-md px-3 py-2 text-sm no-underline hover:bg-white/5" style={{ color: "var(--text)" }}>{l.label}</Link></li>)}</ul></div>
+    </div>
+  );
   return (
-    <header data-theme="dark" className="sticky top-0 z-40 border-b" style={{ background: "var(--ca-ink)", borderColor: "var(--border)" }}>
+    <header data-theme="dark" className="sticky top-0 z-40 border-b backdrop-blur" style={{ background: "rgba(10,22,34,.94)", borderColor: "var(--border)" }}>
       <a href="#main" className="skip-link">Skip to content</a>
-      <div className="container-x flex h-16 items-center justify-between">
+      <div className="container-x flex h-16 items-center justify-between gap-4">
         <Link href="/" aria-label="ConnectAtom home"><Logo width={150} /></Link>
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
-          <Mega label="Products" href="/products" items={products} />
-          <Mega label="Industries" href="/industries" items={industries} />
-          {NAV.map((n) => <Link key={n.href} href={n.href} className="px-3 py-2 text-sm no-underline" style={{ color: "var(--text-body)" }}>{n.label}</Link>)}
+        <nav aria-label="Main" className="hidden items-center lg:flex">
+          <Mega label="Products" href="/products" cols={prodCols} />
+          <Mega label="Industries" href="/industries" cols={indCols} />
+          {apps.length > 0 && <Simple label="Applications" href="/applications" links={apps} />}
+          {guides.length > 0 && <Simple label="Resources" href="/resources" links={guides} />}
+          <Link href="/pricing" className={top} style={{ color: "var(--text-body)" }}>Pricing</Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden px-3 py-2 text-sm no-underline sm:block" style={{ color: "var(--text-body)" }}>Sign in</Link>
-          <Link href="/book-pilot" className="btn btn-primary !h-10 no-underline">Get a free pilot</Link>
-          <button className="btn btn-secondary !h-10 !px-3 lg:!hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
+          <Link href="/book-pilot" className="btn btn-primary hide-xs !h-10 no-underline">Get a free pilot</Link>
+          <MobileNav groups={groups} />
         </div>
       </div>
-      {open && (
-        <nav className="container-x pb-4 lg:hidden" aria-label="Mobile">
-          <ul className="grid gap-1">
-            {[{ href: "/products", label: "Products" }, { href: "/industries", label: "Industries" }, ...NAV, { href: "/login", label: "Sign in" }].map((n) => (
-              <li key={n.href}><Link href={n.href} onClick={() => setOpen(false)} className="block rounded-md px-3 py-3 no-underline" style={{ color: "var(--text)" }}>{n.label}</Link></li>
-            ))}
-          </ul>
-        </nav>
-      )}
     </header>
   );
 }

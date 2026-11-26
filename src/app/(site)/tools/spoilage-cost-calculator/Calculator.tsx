@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { flag } from "@/lib/attribution";
-import { inr } from "@/content/products";
+import { inr } from "@/lib/format";
 
 const num = (v: string) => { const n = Number(v.replace(/,/g, "")); return Number.isFinite(n) && n >= 0 ? n : 0; };
 

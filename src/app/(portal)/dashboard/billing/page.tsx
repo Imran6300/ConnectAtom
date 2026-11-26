@@ -1,6 +1,6 @@
 "use client";
 import { PageHeader, useFetch, Loading, Stat, ErrorNote } from "@/components/portal/ui";
-import { inr } from "@/content/products";
+import { inr } from "@/lib/format";
 
 type Billing = { plan: string; status: string; devices: number; monthlyEstimate: number; planDetails: { label: string; retentionDays: number }; paymentsEnabled: boolean };
 

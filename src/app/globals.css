@@ -27,3 +27,48 @@ select.input { appearance: auto; }
 textarea.input { height: auto; padding-top: 10px; padding-bottom: 10px; min-height: 96px; }
 .skip-link { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--ca-teal); color: var(--ca-ink); padding: 8px 12px; border-radius: 8px; }
 .skip-link:focus { left: 8px; }
+
+/* ======================= V2 design system ======================= */
+[data-sector="cold-chain"] { --sector: #5B9DFF; --sector-soft: rgba(91,157,255,.14); }
+[data-sector="healthcare"] { --sector: #14D1BC; --sector-soft: rgba(20,209,188,.14); }
+[data-sector="food-service"] { --sector: #A78BFA; --sector-soft: rgba(167,139,250,.14); }
+[data-sector="agriculture"] { --sector: #2BC77A; --sector-soft: rgba(43,199,122,.14); }
+[data-sector="industrial"] { --sector: #94A3B8; --sector-soft: rgba(148,163,184,.16); }
+[data-sector="facilities"] { --sector: #38BDF8; --sector-soft: rgba(56,189,248,.14); }
+[data-sector="logistics"] { --sector: #C4B5FD; --sector-soft: rgba(196,181,253,.14); }
+/* on light surfaces the sector colour is used only for graphics, text stays brand teal-700 */
+.sector-dot { background: var(--sector, var(--accent-graphic)); }
+.sector-rule { border-color: var(--sector, var(--accent-graphic)); }
+
+@keyframes ca-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.rise { animation: ca-rise var(--dur-slow) var(--ease) both; }
+.rise-2 { animation-delay: 90ms; } .rise-3 { animation-delay: 180ms; } .rise-4 { animation-delay: 270ms; }
+@keyframes ca-arc { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+.ca-pulse { animation: ca-arc 2.4s ease-in-out infinite; }
+@keyframes ca-draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+.draw { stroke-dasharray: 400; animation: ca-draw 1.6s var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { .rise, .ca-pulse, .draw { animation: none !important; } }
+
+.hover-lift { transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.hover-lift:hover { transform: translateY(-3px); border-color: var(--sector, var(--accent-graphic)); }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 999px; font: 500 .8rem var(--font-body); border: 1px solid var(--border); color: var(--text-body); background: transparent; }
+.chip-solid { background: var(--sector-soft, rgba(20,209,188,.14)); border-color: transparent; color: var(--text); }
+.kicker { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); }
+.hero-fade { background: linear-gradient(90deg, var(--ca-ink) 0%, var(--ca-ink) 38%, rgba(10,22,52,0) 78%); }
+.mega { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility var(--dur); }
+.group:hover > .mega, .group:focus-within > .mega { visibility: visible; opacity: 1; transform: none; }
+.spec-chip { display: inline-block; font: 600 .68rem var(--font-mono); letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
+.spec-confirmed { background: var(--ok-bg); color: var(--ok-text); }
+.spec-design-target { background: var(--warn-bg); color: var(--warn-text); }
+.spec-to-confirm { background: var(--crit-bg); color: var(--crit-text); }
+.rule-line { background: linear-gradient(var(--border), var(--border)) left center / 100% 1px no-repeat; }
+.toc a { display: block; padding: 4px 0; text-decoration: none; color: var(--text-muted); font-size: .9rem; }
+.toc a:hover { color: var(--accent); }
+.prose-ca { max-width: 72ch; }
+.prose-ca p, .prose-ca li { color: var(--text-body); }
+img, svg { max-width: 100%; }
+html, body { overflow-x: clip; }
+.mega { pointer-events: none; } .group:hover > .mega, .group:focus-within > .mega { pointer-events: auto; }
+.prose-ca table, .prose-ca .table-ca { max-width: 100%; }
+.container-x .container-x { padding-left: 0; padding-right: 0; max-width: none; }
+@media (max-width: 639px) { .hide-xs { display: none !important; } }

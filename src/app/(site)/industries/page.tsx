@@ -1,23 +1,33 @@
-import Link from "next/link";
-import { buildMetadata } from "@/lib/seo/metadata";
-import { PageHero, Section } from "@/components/marketing/blocks";
+import type { Metadata } from "next";
+import { getSite } from "@/lib/catalogue/site";
+import { metaFor } from "@/lib/seo/metadata";
+import { itemList, webPage } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SECTORS, SECTOR_META } from "@/lib/catalogue/types";
+import { Band, SectionHead } from "@/components/ui/primitives";
+import { CtaBand, PageHero } from "@/components/marketing/blocks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { LIVE_INDUSTRIES } from "@/content/industries";
-import { LIVE_PRODUCTS } from "@/content/products";
+import { Grid, IndustryCard } from "@/components/marketing/linkcards";
 
-export const metadata = buildMetadata({ title: "Temperature and Equipment Monitoring by Industry in India", description: "See how cold storages, pharmacies, hospitals, restaurants, warehouses and server rooms use ConnectAtom to catch problems before they become losses.", path: "/industries" });
-
-export default function Industries() {
+export const revalidate = 3600;
+export async function generateMetadata(): Promise<Metadata> {
+  return metaFor({ title: "Industries we monitor: cold chain, healthcare, food, farms, factories", short: "Industries we monitor", description: "Monitoring guides for the industries ConnectAtom serves in India, with the products, alerts and checklists that fit each one.", path: "/industries" });
+}
+export default async function IndustriesHub() {
+  const s = await getSite();
   return (
     <>
-      <PageHero eyebrow="Industries" title="Monitoring for the places that lose money when something fails" lede="Pick your kind of site to see what goes wrong, what to monitor, and which product fits.">
+      <JsonLd data={[webPage({ name: "Industries", description: "Industries ConnectAtom serves", path: "/industries", modified: s.rowByUrl.get("/industries")!.lastmod, type: "CollectionPage" }), itemList("Industries", s.industries.map((i) => ({ name: i.name, path: `/industries/${i.slug}` })))]} />
+      <PageHero eyebrow="Industries" title="Find your industry" lede="Each page explains what goes wrong in that line of work, how monitoring helps, and which product to start with.">
         <div className="mt-6"><Breadcrumbs dark trail={[{ name: "Industries", path: "/industries" }]} /></div>
       </PageHero>
-      <Section><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{LIVE_INDUSTRIES.map((i) => (
-        <Link key={i.slug} href={`/industries/${i.slug}`} className="card block no-underline" style={{ color: "inherit" }}>
-          <h3>{i.name}</h3><p className="text-sm">{i.summary}</p>
-          <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>{LIVE_PRODUCTS.filter((p) => i.fits.includes(p.num)).map((p) => p.name).join(", ")}</p>
-        </Link>))}</div></Section>
+      {SECTORS.map((k) => s.sectorIndustries(k).length > 0 && (
+        <Band key={k} sector={k}>
+          <SectionHead eyebrow={`${s.sectorIndustries(k).length} industries`} title={SECTOR_META[k].label} lede={SECTOR_META[k].blurb} />
+          <Grid cols={4}>{s.sectorIndustries(k).map((i) => <IndustryCard key={i.slug} i={i} />)}</Grid>
+        </Band>
+      ))}
+      <CtaBand />
     </>
   );
 }

@@ -1,9 +1,9 @@
-import { indexableRows } from "@/lib/seo/registry";
-import { SITE } from "@/lib/site";
+import { getSite } from "@/lib/catalogue/site";
+import { sitemapIndex } from "@/lib/seo/sitemap";
 
-// Next does not generate a sitemap index. This lists each chunk; submit this one URL in Search Console.
-export function GET() {
-  const n = Math.max(1, Math.ceil(indexableRows().length / 5000));
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Array.from({ length: n }, (_, i) => `<sitemap><loc>${SITE.url}/sitemap/${i}.xml</loc></sitemap>`).join("")}</sitemapindex>`;
-  return new Response(xml, { headers: { "Content-Type": "application/xml" } });
+export const revalidate = 3600;
+// Submit this one URL in Search Console. Child sitemaps are listed automatically from the registry, so a new page family or chunk appears with no edit here.
+export async function GET() {
+  const site = await getSite();
+  return new Response(sitemapIndex(site.rows), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
 }

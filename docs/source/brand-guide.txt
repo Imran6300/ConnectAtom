@@ -1,0 +1,472 @@
+Brand guide
+Logo, colour, type, hardware marking and website theme
+
+
+
+
+Version 1.0   |   18 November 2026   |   connectatom.com
+01 BRAND
+
+
+Who ConnectAtom is
+ConnectAtom makes ready-to-use IoT monitoring. Small sensors watch the things that cost money when
+they fail, and people hear about a problem from ConnectAtom before it becomes a loss.
+
+Positioning
+For owners and managers of cold rooms, clinics, kitchens, warehouses and small factories, ConnectAtom is the
+ready-to-use monitoring system that sends a clear alert the moment something drifts, so it is fixed before it becomes a
+loss. Unlike generic IoT kits and heavy enterprise platforms, it arrives as a working product with install help, local support
+and one simple monthly plan.
+
+Personality
+ Trait               It means                                                       It does not mean
+
+ Precise             Real numbers, exact times, specific alerts.                    Jargon or false accuracy.
+
+ Calm                Quiet by default, clear when it matters, never alarmist.       Silent when something is wrong.
+
+ Practical           Works on day one, explained in the customer's words            Over-engineered features nobody asked for.
+                     (stock, fridge, shift).
+
+ Dependable          Always on, honest about limits, easy to reach.                 Big promises. We say what we do and what we
+                                                                                    do not.
+
+
+Voice
+• Plain words, short sentences. Numbers beat adjectives: 'Alert in under a minute' beats 'lightning-fast'.
+• Avoid hype and filler: cutting-edge, revolutionary, next-gen, seamless, solutions, synergy.
+• Write alerts like a calm colleague: what happened, how long, what to check.
+ Good                                                                 Avoid
+
+ Cold Room 2: 9.4°C for 10 min (limit 8°C). Door open 14 min.         ALERT!!! Temperature anomaly detected on device CR2.
+ Check door and compressor.
+
+ Know before it fails.                                                Revolutionary next-gen AIoT solutions for the connected
+                                                                      enterprise.
+
+
+Tagline and lines
+ Use                     Line                                                   Where
+
+ Primary tagline         Know before it fails.                                  Logo lockups, hero, ads, packaging
+
+ Support line            Wireless monitoring with instant alerts.               Below the tagline, meta descriptions
+
+
+Naming rules
+• Write ConnectAtom: one word, capital C and A. Never 'Connect Atom', 'Connectatom' or 'CONNECTATOM' in running
+  text.
+• Products use the brand plus a plain name: ConnectAtom Cold Room, ConnectAtom Med Fridge, ConnectAtom Kitchen,
+  ConnectAtom Godown.
+• Model codes: CA, two letters, generation number (CA-CR1 cold room, CA-MF1 med fridge, CA-KT1 kitchen, CA-GD1
+  godown). Serials use CA-000123, matching the platform device ID.
+
+Boilerplate (about 50 words)
+ConnectAtom builds ready-to-use wireless monitoring for cold rooms, clinics, kitchens, warehouses and small factories
+in India. Sensors send live readings to a simple dashboard and alert the right person on WhatsApp the moment something
+drifts. Every system comes with installation help and a clear monthly plan.
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                    2
+02 LOGO
+
+
+The mark and the wordmark
+An open ring is the atom's orbit and the C of Connect. The nucleus is the sensor at the core. The trace
+and end node carry data out, like a circuit-board trace ending in a pad. One simple shape, flat colour, no
+gradients, so it reproduces equally well on a screen, a label and an engraved enclosure.
+
+
+
+
+Primary horizontal lockup on light (left) and on dark (right). Light version: Deep Space and Teal 700 wordmark, Teal 600 graphic. Dark
+version: Mist and Atom Teal.
+
+
+
+
+Stacked                           Stacked, reversed                      Icon only                            App icon / favicon
+
+
+
+
+                                          Orbit ring: the C of Connect
+
+
+                                          Nucleus: the sensor
+
+                                          Trace and node: data out
+
+
+
+
+                                                                             Clear space = 1.5 × the nucleus diameter (x), on every side
+
+
+
+Minimum sizes
+ Use                                Smallest size                                        Note
+
+ Screen, horizontal lockup          120 px wide                                          Below this, use the icon only.
+
+ Screen, icon / favicon             16 px (use the bold favicon.svg)                     The favicon has thicker strokes for small sizes.
+
+ Print, horizontal lockup           30 mm wide                                           Wordmark capital height is about 2.4 mm.
+
+ Hardware, icon only                8 mm tall (6 mm for laser engraving only)            Ring stroke 0.72 mm, trace 0.52 mm at 8 mm.
+
+ Hardware, horizontal lockup        45 mm wide                                           Mark box 8 mm tall.
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                              3
+Approved backgrounds
+
+
+
+
+Colour on White                   Colour on Mist                    Reversed on Deep Space            White on Teal 700
+
+
+Do not
+
+
+
+
+X Do not stretch or squash                    X Do not rotate                            X Do not recolour
+
+
+
+
+X Do not add shadows or effects               X Do not use low-contrast backgrounds      X Do not place on busy patterns
+
+The brand kit
+ Folder             Files
+
+ logo/svg           Icon, horizontal and stacked lockups in colour, reversed, black and white
+
+ logo/png           1024 px icons, 2000 px horizontal, 1600 px stacked
+
+ hardware           One-colour mark and lockup (black and white) with outlined text and solid fills
+
+ web                favicon.svg, app-icon.svg, icon-192.png, icon-512.png, favicon-64.png, og-image-1200x630.png,
+                    circuit-pattern.svg
+
+ theme              brand.css (variables, light and dark themes, components) and tailwind.brand.ts
+
+ README.md          Install steps for Next.js fonts and the theme
+
+
+Before you rely on the name and logo commercially, run a trademark search in India (class 9 for devices, class 42 for software
+services) and a visual search for similar marks. The logo is original artwork made for ConnectAtom, but only a formal search can
+tell you whether something similar is already registered.
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                 4
+03 COLOUR
+
+
+Deep Space and Atom Teal
+A dark, precise base with one bright accent. Teal means 'live and connected'. Amber and red are
+reserved for warnings and alarms, so they keep their meaning.
+
+
+ Deep Space                                      Atom Teal                                          Teal 700
+
+
+ #0A1622      RGB 10 22 34                       #14D1BC       RGB 20 209 188                       #087A6E       RGB 8 122 110
+
+Primary dark. Backgrounds, logo ring on light.   Accent on dark. Logo accent on dark, links, live   Text and buttons on light backgrounds.
+                                                 status.
+
+
+
+
+ Teal 600                                        Mist                                               Cloud
+
+
+ #0A8F80      RGB 10 143 128                     #F4F8FA       RGB 244 248 250                      #E3EBF0       RGB 227 235 240
+
+Logo accent and graphics on light.               Light page background.                             Borders and dividers on light.
+
+
+
+
+ Slate                                           Graphite                                           Surface
+
+
+ #566879      RGB 86 104 121                     #2B3B4A       RGB 43 59 74                         #112536       RGB 17 37 54
+
+Secondary text on light.                         Body text on light.                                Cards on dark.
+
+
+
+
+ Signal Amber                                    Alert Red                                          OK Green
+
+
+ #FFB224      RGB 255 178 36                     #F0524F       RGB 240 82 79                        #2BC77A       RGB 43 199 122
+
+Highlights and warnings.                         Alarms and critical alerts.                        Normal and healthy status.
+
+
+
+
+Proportion
+
+60% Deep Space / Mist                                                                     25% neutrals                           10% Teal
+
+                                                                                                                                             Amber, red, green
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                                     5
+Accessibility: tested contrast
+ Pair                                        Ratio       Result                   Use
+
+ Deep Space on Mist                          17.1 : 1    AA text                  Body and headings on light
+
+ Graphite on White                           11.5 : 1    AA text                  Body text
+
+ Slate on White                              5.8 : 1     AA text                  Secondary text
+
+ Teal 700 on White                           5.2 : 1     AA text                  Links, primary button on light
+
+ Atom Teal on Deep Space                     9.5 : 1     AA text                  Accent on dark
+
+ Deep Space on Atom Teal                     9.5 : 1     AA text                  Primary button on dark
+
+ Muted text (9FB3C3) on Deep Space           8.4 : 1     AA text                  Secondary text on dark
+
+ Teal 600 on White                           4.0 : 1     Graphics / large text    Graphics and large text only
+
+
+Status and chart colours
+• Status: OK green, Signal Amber, Alert Red. On light backgrounds use the darker text tones (green 157A47, amber
+  8A5300, red C2362F, all 5.4:1 or better) so text stays readable. Always pair colour with a word or icon, never colour
+  alone.
+• Charts, in order on light: 0A8F80, 3B82F6, F59E0B, 8B5CF6, EF4444, 64748B. On dark: 14D1BC, 5B9DFF, FFB224,
+  A78BFA, FF7A77, 94A3B8.
+• Print: match colours from a physical proof with your printer. The values here are screen (RGB) values.
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                            6
+04 TYPE AND INTERFACE
+
+
+Space Grotesk, Inter and JetBrains Mono
+Space Grotesk gives headlines a precise, technical voice. Inter keeps interfaces and body copy clear.
+JetBrains Mono is for readings, IDs and codes. All three are free under the SIL Open Font Licence.
+
+
+        DISPLAY    |   SPACE GROTESK BOLD
+
+
+
+        Know before it fails.
+        BODY   |   INTER
+
+        Sensors send live readings to one dashboard and alert the right person on WhatsApp.
+        DATA   |   JETBRAINS MONO
+
+        CA-000123              4.2°C            RH 61%            -61 dBm
+
+ Style                  Font and weight                               Size / line height                Use
+
+ Display                Space Grotesk 700, -3% tracking               56 / 60 (fluid)                   Home hero only
+
+ Heading 1              Space Grotesk 700, -2%                        40 / 44                           Page titles
+
+ Heading 2              Space Grotesk 700, -2%                        28 / 34                           Section titles
+
+ Heading 3              Space Grotesk 600                             20 / 28                           Cards, sub-sections
+
+ Body                   Inter 400                                     16 / 26                           Paragraphs
+
+ Small / caption        Inter 400 or 500                              14 / 22 and 12 / 18               Hints, table text
+
+ Eyebrow                JetBrains Mono 400, caps, +12%                12 / 16                           Section labels
+
+ Data                   JetBrains Mono 500, tabular figures           14 to 40                          Readings, IDs, codes
+
+
+Interface components
+
+
+         Cold Room 2                                 Normal                         Cold Room 2                                   Normal
+         Main Store | Limit 2 to 8°C                                                Main Store | Limit 2 to 8°C
+
+
+
+
+         4.2°C
+         Updated 12 s ago
+                                                                                    4.2°C
+                                                                                    Updated 12 s ago
+
+
+
+
+         Cold Room 3                                Above limit                      Get a free pilot               See products
+         Main Store | Limit 2 to 8°C, 10 min over
+
+
+
+
+         9.4°C
+         Updated 12 s ago
+                                                                                    Normal             Warning             Critical
+
+
+
+                                                                                Radius 16 px cards, 10 px controls, 44 px tap height.
+                                                                                Motion 140 to 420 ms, ease-out. Respect reduced motion.
+   Light theme: dashboard, forms, documents                                     Dark theme: hero, footer, status screens
+
+Tokens live in theme/brand.css (CSS variables, light and dark themes, buttons, cards, badges, inputs, focus ring, circuit-grid
+background) and theme/tailwind.brand.ts (Tailwind v3 extension).
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                             7
+05 HARDWARE
+
+
+The same logo on every device
+The mark is a single flat shape, so it can be engraved, printed or moulded without redrawing. Use the files
+in the hardware folder: solid fills, one colour, outlined text.
+
+
+
+                                                    ONLINE                                                                   ONLINE
+
+
+
+
+      CA-CR1   COLD ROOM MONITOR                                               CA-CR1   COLD ROOM MONITOR
+                    CA-CR1                                                                   CA-CR1
+                    S/N CA-000123                                                            S/N CA-000123
+                    SAMPLE                                                                   SAMPLE
+
+
+
+
+Illustrative front view of a sealed enclosure, not to scale. Light housing with dark engraving, or Deep Space housing with a light logo.
+Teal is the status accent (LED and light pipe), never a large colour field.
+
+Marking methods
+ Method                                Logo file                       Smallest size                  Notes
+
+ Laser engraving (ABS,                 Hardware lockup or mark, one    Mark 8 mm (6 mm                Test a sample. Contrast depends on
+ anodised aluminium)                   colour                          absolute)                      material and colour.
+
+ Pad or screen printing on             Hardware lockup, white on       Mark 8 mm, lockup 45           One colour, solid fill. Confirm ink
+ housing                               dark or ink on light            mm wide                        adhesion on your plastic.
+
+ Adhesive label (polyester,            Full-colour or one-colour       Lockup 30 mm wide              Use for model, serial, QR,
+ PET)                                  lockup                                                         certification marks.
+
+ PCB silkscreen                        Hardware mark only, one         Mark 6 mm                      Keep clear of pads and vias.
+                                       colour                                                         Confirm line limits with your fab.
+
+ Moulded or embossed (later)           Hardware mark                   Mark 12 mm or larger           Ask the toolmaker. Thicker strokes
+                                                                                                      may be needed.
+These sizes are starting recommendations. Make one physical sample per method before you order a batch.
+
+Product label
+
+                                                                      50 x 30 mm label
+
+                                                                      1. Logo lockup, one colour, top.
+                                                                      2. Model code and serial in mono type.
+                             CA-CR1
+                                                                      3. QR claim code, at least 18 mm square.
+                             S/N    CA-000123
+                                                                      4. Reserve space for certification marks
+                             Scan to claim device
+                                                                        and the power rating. Confirm these with
+                                                                        your compliance consultant.
+                             [power rating]                           5. The serial matches the device ID in the platform.
+                             [BIS / WPC marks as required]
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                              8
+06 WEBSITE
+
+
+Applying the brand on connectatom.com
+Dark and confident at the top, light and calm where people work. Every page leads with one clear action.
+
+
+
+                                                     Products       How it works    Pricing            Case studies       Get a free pilot
+
+
+
+
+      WIRELESS MONITORING FOR COLD ROOMS, CLINICS AND KITCHENS
+                                                                                       Cold Room 2                          Normal
+
+
+
+      Know before                                                                      4.2°C
+      it fails.
+      Live readings and a WhatsApp alert the moment
+      something drifts. Installed and supported for you.
+                                                                                   ConnectAtom alert
+                                                                                   Cold Room 3: 9.4°C for 10 min (limit 8°C).
+             Get a free pilot            See how it works
+                                                                                   Door open 14 min. Check door and compressor.
+
+
+
+
+Home hero (dark theme). One primary action, a live-looking product card, and an alert written in the brand voice.
+
+Page rhythm
+ Block                          Theme                                 Content
+
+ Hero                           Dark with circuit-grid background     Tagline, one-line promise, primary and secondary button,
+                                                                      device card
+
+ Proof                          Light                                 Customer quotes, numbers from case studies, alert-time
+                                                                      figure
+
+ How it works                   Light                                 Three steps: install, connect, get alerted
+
+ Products                       Light cards                           One card per product with price from, buyer, and one
+                                                                      outcome
+
+ Case study                     Dark band                             Before and after with real numbers
+
+ Pricing                        Light                                 Starter, Pro, Business per device per month
+
+ FAQ and final call to          Light then dark footer                Objections, 30-day pilot, contact on WhatsApp
+ action
+
+
+Search and sharing details
+• Title pattern: Product benefit | ConnectAtom, for example 'Cold room temperature monitoring with WhatsApp
+  alerts | ConnectAtom'.
+• Logo alt text: 'ConnectAtom'. Use the SVG, not a PNG, in the header. Set favicon.svg, 192 and 512 px icons and the
+  1200x630 share image from the kit.
+• Add Organisation structured data with the logo URL so search engines can show it.
+{ "@context": "https://schema.org", "@type": "Organization", "name": "ConnectAtom", "url": "https://connectatom.com",
+"logo": "https://connectatom.com/logo/connectatom-icon-color.svg" }
+
+
+
+
+ConnectAtom brand guide | v1.0 | November 2026                                                                                               9
+

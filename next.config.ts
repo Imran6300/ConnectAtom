@@ -1,22 +1,31 @@
 import type { NextConfig } from "next";
+import redirects from "./src/content/catalogue/redirects";
 
-const BACKEND = process.env.BACKEND_URL ?? "http://localhost:5000";
-
-// Pages that must never be indexed (blueprint: portal, admin, forms, thank-you, auth).
-const NOINDEX = ["/dashboard/:path*", "/admin/:path*", "/get-quote", "/book-pilot", "/thank-you", "/login", "/register", "/forgot-password", "/reset-password"];
-
-const nextConfig: NextConfig = {
+const config: NextConfig = {
   poweredByHeader: false,
-  reactStrictMode: true,
-  images: { formats: ["image/avif", "image/webp"] },
-  // Same-origin API: the browser talks to /api/*, Next forwards it to the Express backend.
-  // That keeps the auth cookie first-party and avoids CORS in the browser.
+  trailingSlash: false,
+  images: { formats: ["image/avif", "image/webp"], deviceSizes: [360, 640, 828, 1080, 1280, 1600], minimumCacheTTL: 60 * 60 * 24 * 30 },
+  compress: true,
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${BACKEND}/api/:path*` }];
+    return [
+      // child sitemaps: /sitemap-products.xml, /sitemap-industries-2.xml ... (the index at /sitemap-index.xml is a real route and wins)
+      { source: "/sitemap-:name.xml", destination: "/sitemaps/:name" },
+      { source: "/sitemap.xml", destination: "/sitemap-index.xml" },
+      {
+  source: "/api/:path*",
+  destination: `${process.env.API_ORIGIN ?? (process.env.NODE_ENV === "production" ? "https://api.connectatom.com" : "http://127.0.0.1:5000")}/api/:path*`,
+},
+    ];
+  },
+  // Static redirect rules. Redirects stored in MongoDB are applied at request time by the dynamic page routes (site.redirectFor).
+  async redirects() {
+    return redirects.map((r) => ({ source: r.from, destination: r.to, permanent: true }));
   },
   async headers() {
-    return NOINDEX.map((source) => ({ source, headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }));
+    return [
+      { source: "/logo/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/:path*", headers: [{ key: "X-Content-Type-Options", value: "nosniff" }, { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }] },
+    ];
   },
 };
-
-export default nextConfig;
+export default config;

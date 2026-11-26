@@ -1,0 +1,2287 @@
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  ConnectAtom: Next.js SEO and Platform
+  Blueprint
+    Nov 20, 2026 · ​@Imran
+
+
+
+  Overview
+  ConnectAtom needs three surfaces that share one data model: a public site that earns
+  search traffic, a customer portal that runs the devices, and an admin console that runs the
+  business.
+
+
+     Surface                  Who uses it         Address                   Rendering and access
+
+     Public site              Buyers and          connectatom.com           Static and incrementally
+                              search                                        regenerated pages, no
+                              crawlers                                      login
+
+     Customer                 Customer            app.connectatom.com       Dynamic pages, Clerk
+     portal                   owners and                                    organisation login
+                              staff
+
+     Admin                    You, later your     admin.connectatom.com     Dynamic, staff roles,
+     console                  team                                          two-factor, never
+                                                                            indexed
+
+     Device API               Sensors in the      api.connectatom.com and   Per-device credentials,
+                              field               mqtt.connectatom.com      no browser
+
+
+  The SEO engine is the catalogue. Products, industries, use cases, problems and cities are
+  records in MongoDB. Every public page is a view of one record, or of a valid combination
+  of records, so one edit in the admin console updates every page that uses it.
+
+  A combination page is published only when it is a real buying situation and carries enough
+  content of its own. Generating every possible combination would create thousands of
+  near-duplicate pages, which is the pattern Google's spam policies target. Section 4 sets
+  the gates that prevent that.
+
+
+
+
+                                                                                                    Page 1 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  How to read this document
+         Sections 2 to 8: the public site, its page families, templates, technical SEO, internal
+         links and content process.
+         Sections 9 and 10: what a visitor and a customer actually experience.
+         Sections 11 and 12: the admin console and the lead-to-customer management behind
+         it.
+         Sections 13 and 14: measurement, launch order and risks.
+
+
+  Assumptions in this blueprint
+         One monorepo with two Next.js apps: web (public site) and console (portal and
+         admin, chosen by host), plus shared packages for the database, UI, SEO helpers and
+         auth.
+         MongoDB Atlas as the single database, Clerk for customer login, Razorpay for billing,
+         matching the platform document you already have.
+         English first, with Hindi and Telugu versions added only after English pages prove
+         they get traffic.
+         Hyderabad and Telangana are the first local market, then other Indian cities.
+
+
+  Site map and URL structure
+  The public site has about 20 route patterns, and each pattern maps to one entity type, so
+  a new product, industry or city becomes new pages by adding a record, not code.
+
+
+  URL rules
+         One entity, one canonical URL. Lowercase, hyphens, no dates, no trailing slash, no
+         indexable query-string variants.
+         The path states the relationship. /industries/pharmacy/medical-fridge-monitor
+         reads as "this product for this industry", and the breadcrumb mirrors it: Home,
+         Industries, Pharmacy, Medical fridge monitor.
+         Three path segments at most.
+         A slug is fixed once published. If an editor changes it, the old URL gets a permanent
+         redirect automatically (stored in a redirects collection, section 6).
+         Words in the slug are the words buyers search: cold-room-monitor , not product-1 .
+
+
+
+
+                                                                                               Page 2 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Public route patterns
+
+     Route                                        Entity         Example URL                       Rendering
+
+      /                                           Home           connectatom.com                   Static,
+                                                                                                   revalidated
+                                                                                                   on publish
+
+      /products                                   Product hub    /products                         Static
+
+      /products/[product]                         Product        /products/cold-room-monitor       Static,
+                                                                                                   revalidated
+                                                                                                   on publish
+
+      /industries                                 Industry hub   /industries                       Static
+
+      /industries/[industry]                      Industry       /industries/cold-storage          Static,
+                                                                                                   revalidated
+                                                                                                   on publish
+
+      /industries/[industry]/[product]            Industry and   /industries/pharmacy/medical-     Static, only
+                                                  product        fridge-monitor                    fit-approved
+                                                                                                   pairs
+
+      /use-cases/[useCase]                        Use case       /use-cases/power-cut-alerts       Static
+
+      /locations/[city]                           City           /locations/hyderabad              Static
+
+      /locations/[city]/[product]                 City and       /locations/hyderabad/cold-        Static, only
+                                                  product        room-monitor                      cities with
+                                                                                                   local proof
+
+      /guides/[slug]                              Guide          /guides/cold-room-                Static
+                                                                 temperature-range
+
+      /topics/[topic]                             Topic hub      /topics/cold-chain-monitoring     Static
+
+      /compare/[slug]                             Comparison     /compare/diy-esp32-vs-ready-      Static
+                                                                 monitoring
+
+      /tools/[tool]                               Calculator     /tools/spoilage-cost-calculator   Static page,
+                                                                                                   client-side
+                                                                                                   calculator
+
+      /glossary/[term]                            Term           /glossary/temperature-            Static
+                                                                 excursion
+
+      /case-studies/[slug]                        Case study     /case-studies/hyderabad-cold-     Static
+                                                                 room-pilot
+
+
+
+
+                                                                                                            Page 3 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Route                                        Entity       Example URL               Rendering
+
+      /pricing , /how-it-works ,                  Company      /pricing                  Static
+      /security , /about , /contact ,             pages
+      /partners
+
+      /legal/[doc]                                Legal        /legal/privacy            Static
+
+      /get-quote , /book-pilot , /thank-          Conversion   /book-pilot               Dynamic
+     you                                                                                 form,
+                                                                                         noindex
+
+
+  Hub pages ( /products , /industries , /guides and so on) list their children and are real
+  pages with an introduction, not bare link lists.
+
+
+  Never indexed
+  The customer portal, the admin console, /api/* , internal search results, thank-you
+  pages, form pages carrying tracking parameters, and draft previews. These carry a
+  noindex directive and are excluded from the sitemap and from robots-allowed crawl paths
+  where possible. Portal and admin routes are listed in sections 10 and 11.
+
+
+  Repository layout
+
+     apps/
+        web/                                         public site
+          app/
+            layout.tsx                               fonts, theme, Organization and WebSite JSON-
+     LD
+            page.tsx                                 home
+            sitemap.ts                               sitemap files, one set per page family
+            robots.ts
+            not-found.tsx
+            (company)/                               route group, does not change URLs
+              pricing/page.tsx
+              how-it-works/page.tsx
+              security/page.tsx
+              about/page.tsx
+              contact/page.tsx
+              partners/page.tsx
+              legal/[doc]/page.tsx
+            (conversion)/                            noindex
+              get-quote/page.tsx
+
+
+
+
+                                                                                                   Page 4 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+             book-pilot/page.tsx
+             thank-you/page.tsx
+           products/
+             page.tsx
+             [product]/page.tsx
+           industries/
+             page.tsx
+             [industry]/
+               page.tsx
+               [product]/page.tsx
+           use-cases/
+             page.tsx
+             [useCase]/page.tsx
+           locations/
+             page.tsx
+             [city]/
+               page.tsx
+               [product]/page.tsx
+           guides/
+             page.tsx
+             [slug]/page.tsx
+           topics/[topic]/page.tsx
+           compare/[slug]/page.tsx
+           tools/
+             page.tsx
+             [tool]/page.tsx
+           glossary/
+             page.tsx
+             [term]/page.tsx
+           case-studies/
+             page.tsx
+             [slug]/page.tsx
+           api/
+             leads/route.ts                         form posts into the CRM
+             revalidate/route.ts                    admin publish webhook
+       console/                                   customer portal and admin (sections 10 and
+     11)
+     packages/
+       db/                                        models, queries, tenant-safe helpers
+       seo/                                       metadata and JSON-LD builders, link graph,
+     quality gate
+       ui/                                        brand components and theme
+
+
+
+
+                                                                                           Page 5 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+       auth/                                                    roles and permission checks
+     services/
+       ingest/                                                  MQTT and device ingest from the platform
+     document
+
+
+
+
+  Relational entities
+  The data model has two halves joined by one rule: every lead stores the page and the
+  entities it came from, so revenue can be traced back to the page that earned it.
+
+
+  Catalogue collections (what the public pages are built from)
+
+     Collection                                   Key fields                                  Feeds
+
+      products                                    slug, name, modelCode, tier, phase,         20 product pages, cards
+                                                  summary, problem, hardware,                 everywhere
+                                                  features, pricing, relatedProductIds,
+                                                  faqIds, seo
+
+      industries                                  slug, name, summary, buyerRoles,            Industry pages
+                                                  typicalSites, lossScenarios,
+                                                  standardIds, seasonalNotes, seo
+
+      productIndustryFits                         productId, industryId, fitScore, angle,     Industry and product
+                                                  problem, setup, defaultThresholds,          pages
+                                                  reportTemplate, proofIds, gate, status
+
+      useCases                                    slug, name, job, productIds,                Use-case pages
+                                                  industryIds, steps, seo
+
+      problems                                    slug, query, intent, answer,                Guide and FAQ targeting
+                                                  productIds, industryIds, guideId
+
+      cities                                      slug, name, state, tier, climateNotes,      City pages
+                                                  powerCutNotes, coverage,
+                                                  partnerIds, localCustomerCount,
+                                                  status
+
+      cityProductPages                            cityId, productId, localAngle,              City and product pages
+                                                  localProofIds, availability, gate, status
+
+
+
+
+                                                                                                                     Page 6 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Collection                                   Key fields                                  Feeds
+
+      guides                                      slug, title, topicId, type, body,           Guides
+                                                  authorId, reviewerId, sources,
+                                                  productIds, industryIds, publishedAt,
+                                                  updatedAt
+
+      topics                                      slug, name, description, pillarGuideId      Topic hubs
+
+      comparisons                                 slug, title, options, criteria, verdict,    Compare pages
+                                                  productIds
+
+      caseStudies                                 slug, accountId, industryId,                Case studies
+                                                  productIds, cityId, problem, setup,
+                                                  results, quote, consent, status
+
+      tools                                       slug, name, type, config, productIds        Calculators
+
+      glossaryTerms                               slug, term, definition, relatedTermIds,     Glossary
+                                                  guideIds
+
+      faqs                                        scope, question, answer, productIds,        FAQ blocks on any page
+                                                  industryIds
+
+      authors                                     name, role, bio, credentials,               Bylines and reviewer
+                                                  profileLinks                                credits
+
+      redirects                                   from, to, status, reason, createdAt         301 rules
+
+
+
+  Page registry (the SEO spine)
+   pages has one row per public URL and is generated from the records above, never edited
+  by hand. The sitemap, internal links, breadcrumbs, the admin SEO dashboard and the
+  quality gate all read from it.
+
+
+     Field                                                               Purpose
+
+      url , template                                                     The path and which template renders it
+
+      entityRefs                                                         The records it is built from (product, industry,
+                                                                         city, guide and so on)
+
+      indexable , canonical                                              Whether it goes in the sitemap, and its
+                                                                         canonical URL
+
+
+
+
+                                                                                                                     Page 7 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Field                                                     Purpose
+
+      qualityScore , wordCount ,                               Output of the quality gate (section 4)
+      uniqueCopyRatio
+
+      inlinks , outlinks                                       Counts from the link graph (section 7)
+
+      lastmod                                                  Last meaningful content change, not the last
+                                                               deploy
+
+      gsc                                                      Latest Search Console snapshot: indexing
+                                                               state, impressions, clicks, average position
+
+
+
+  Business collections (customers and revenue)
+
+     Collection                Key fields
+
+      leads                    contact, company, businessType, siteCount, need,
+                               stage, score, ownerId, consent, origin (below)
+
+      accounts                 name, gstin, segment, plan, status, tenantId,
+                               ownerId, createdFrom (leadId)
+
+      contacts                 accountId, name, phone, email, role,
+                               preferredChannel
+
+      quotes                   accountId, items, hardwareTotal, monthlyTotal,
+                               validUntil, status
+
+      jobs                     accountId, type (survey, install, replace),
+                               scheduledAt, assigneeId, checklist, status
+
+      tickets                  accountId, deviceId, subject, status, priority,
+                               assigneeId, thread
+
+      activities               leadId or accountId, type, note, at, by
+
+      staffUsers               name, email, role, active
+
+
+  The customer-side collections ( tenants , memberships , sites , devices , readings ,
+   alertRules , incidents , subscriptions , invoices , auditLogs ) are the ones defined
+  in the platform document. accounts.tenantId links the CRM view of a customer to its
+  portal workspace.
+
+
+
+
+                                                                                                          Page 8 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  The attribution link
+  Every lead carries an origin object, filled on the first visit and kept through the whole
+  journey:
+
+     origin: {
+         firstPageUrl: string;                    // first page of the first visit
+         landingPageUrl: string;                  // page where the form was sent
+         pageId: ObjectId;                        // row in `pages`
+         productId?: ObjectId;                    // entities of the landing page
+         industryId?: ObjectId;
+         cityId?: ObjectId;
+       source: "organic" | "direct" | "referral" | "meta" | "whatsapp" | "partner"
+     | "other";
+       utm?: { source?: string; medium?: string; campaign?: string; content?:
+     string; term?: string };
+         gclid?: string; fbclid?: string;
+         referrer?: string;
+     }
+
+
+  When a lead becomes an account and later pays, the revenue is attributed to pageId . The
+  admin dashboard can then answer "which pages, products, industries and cities produce
+  paying customers", not just traffic.
+
+
+  Two core records in code
+
+     // packages/db/models/catalogue.ts
+     export interface SeoFields {
+         titleOverride?: string;
+         descriptionOverride?: string;
+         canonicalOverride?: string;
+         noindex?: boolean;
+         ogImage?: string;
+     }
+
+
+     export interface Product {
+         _id: ObjectId;
+         slug: string;                                  // unique, fixed once live
+         name: string;                                  // "Cold Room Monitor"
+         modelCode: string;                             // "CA-CR1"
+         tier: 1 | 2 | 3;
+         phase: "launch" | "expand" | "later";
+         status: "draft" | "review" | "live" | "archived";
+
+
+
+                                                                                         Page 9 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+         summary: string;
+         problem: string;
+         hardware: { sensors: string[]; connectivity: ("wifi" | "4g" | "lora")[];
+     power: string; enclosure: string };
+       features: { title: string; body: string }[];
+       pricing: { hardwareFromInr: number; monthlyFromInr: number; planKeys:
+     string[] };
+         relatedProductIds: ObjectId[];
+         faqIds: ObjectId[];
+         seo: SeoFields;
+         reviewedAt?: Date;                       // printed on the page as "Reviewed on"
+         updatedAt: Date;
+     }
+
+
+     export interface ProductIndustryFit {
+         productId: ObjectId;
+         industryId: ObjectId;
+         fitScore: 0 | 1 | 2 | 3 | 4 | 5;         // set by you, not computed
+         angle: string;                           // the one-line reason this pair exists
+         problem: string;                         // copy written for this industry only
+         setup: string;                           // how it is installed and configured
+     there
+       defaultThresholds: { channel: string; op: ">" | "<"; value: number;
+     forMinutes: number }[];
+       reportTemplate?: string;
+         proofIds: ObjectId[];               // case studies and testimonials
+         gate: { passed: boolean; checkedAt: Date; failures: string[] };
+         status: "draft" | "review" | "live" | "archived";
+     }
+
+
+
+  Rules for the data
+         References use ObjectIds. Slugs are copied onto the referencing record only for
+         routing and are rewritten by a job when a slug changes.
+         Every public record follows the same status flow: draft, review, live, archived. Only
+          live records produce pages.
+         Indexes: unique slug on every catalogue collection, a unique compound index on
+         ( productId , industryId ) and on ( cityId , productId ), and a text index on guides
+         and glossary for admin search.
+         A record that is archived keeps its URL and redirects to its parent hub, so no link ever
+         returns an error.
+
+
+                                                                                            Page 10 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Programmatic SEO page system
+  The plan is about 465 public pages after 12 months, starting from about 123 at launch. Only
+  the 122 combination pages are generated from rules; every other page is written and
+  reviewed by a person.
+
+
+  The rule that keeps it safe
+  Google's spam policies define scaled content abuse as many pages generated mainly to
+  manipulate rankings, however they are made, and name using generative AI to produce
+  many pages without adding value for users. They define doorway abuse as pages created
+  to rank for similar queries, and give city-targeted pages that funnel users to one
+  destination as an example.
+
+  That is exactly the risk of a catalogue that multiplies 20 products by 30 industries by many
+  cities. The answer is not to avoid combination pages. It is to publish a combination only
+  when it passes a gate that proves it is a real buying situation with content of its own
+  (below). Google publishes no numeric thresholds, so every number in this section is a
+  starting value for you to tune, not a Google rule.
+
+
+  Page families
+
+     Family                          Built from             How the content is made      Gate before
+                                                                                         publish
+
+     Hubs and                        Static content         Written by you               Review
+     company
+
+     Products                         products              Written, specs read from     Technical review
+                                                            the catalogue
+
+     Industries                       industries            Written                      Review
+
+     Industry and                     productIndustryFits   Assembled from the           Combination
+     product                                                catalogue plus fields        gate
+                                                            written for the pair
+
+     Use cases                        useCases              Written                      Review
+
+     Guides                           guides                Written, AI drafts allowed   Editorial gate
+                                                            but reviewed
+
+     Topic hubs                       topics                Written                      Review
+
+
+
+                                                                                                       Page 11 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Family                          Built from                   How the content is made        Gate before
+                                                                                                 publish
+
+     Glossary                         glossaryTerms               Short written definitions      Unique
+                                                                  with links                     definition, 3 links
+
+     Comparisons                      comparisons                 Written around a criteria      Editorial gate
+                                                                  table
+
+     Tools                            tools                       Working calculator plus a      Tested,
+                                                                  written explanation            explained
+
+     Case studies                     caseStudies                 Written from real              Customer
+                                                                  accounts                       consent
+
+     City hubs                        cities                      Written with local facts       City gate
+
+     City and                         cityProductPages            Assembled plus local           City gate
+     product                                                      fields
+
+
+
+  Seed data: the 20 products
+  Product numbers match the product list in your earlier playbook. Pages go live only for
+  products you can actually pilot or sell, so Tier 2 and Tier 3 pages appear as each product is
+  built. A "coming soon" page with no real content is thin by definition and is not published.
+
+
+    #          Product                            Slug                       Page        Industries that   City
+                                                                             phase       fit               pages
+
+    1          Cold room monitor                  cold-room-monitor          Launch      11                Yes
+
+    2          Medical fridge monitor             medical-fridge-monitor     Launch      5                 Yes
+
+    3          Kitchen freezer monitor            kitchen-freezer-monitor    Launch      6                 Yes
+
+    4          Warehouse climate                  warehouse-climate-         Launch      6                 Yes
+               monitor                            monitor
+
+    5          Server room monitor                server-room-monitor        Launch      3                 No
+
+    6          Door open sensor                   door-open-sensor           Launch      12                No
+
+    7          Water leak detector                water-leak-detector        Launch      3                 No
+
+    8          Dairy chilling monitor             dairy-chilling-monitor     Launch      1                 No
+
+    9          Greenhouse climate                 greenhouse-climate-        Expand      3                 No
+               monitor                            monitor
+
+    10         Poultry shed monitor               poultry-shed-monitor       Expand      2                 No
+
+
+
+
+                                                                                                                 Page 12 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+    #          Product                            Slug                            Page     Industries that   City
+                                                                                  phase    fit               pages
+
+    11         Water tank level monitor           water-tank-level-monitor        Expand   7                 No
+
+    12         Generator monitor                  generator-monitor               Expand   14                No
+
+    13         Air quality monitor                air-quality-monitor             Expand   7                 No
+
+    14         Soil moisture monitor              soil-moisture-monitor           Expand   2                 No
+
+    15         Machine downtime                   machine-downtime-               Expand   2                 No
+               tracker                            tracker
+
+    16         Vibration monitor                  vibration-monitor               Later    2                 No
+
+    17         Energy monitor                     energy-monitor                  Later    6                 No
+
+    18         Compressor monitor                 compressor-monitor              Later    2                 No
+
+    19         Reefer truck tracker               reefer-truck-tracker            Later    6                 No
+
+    20         Aquaculture water                  aquaculture-water-              Later    1                 No
+               monitor                            monitor
+
+
+  City pages are limited to the four hero products (1 to 4) because those are the ones a local
+  buyer searches for and you can install locally.
+
+
+  Seed data: 30 industries and the fit matrix
+  This table is the productIndustryFits seed. A pair is listed only where a real buyer in
+  that industry uses that product. The fit scores are my judgement from the product list, so
+  confirm each against your buyer conversations before publishing. Wave 1 is launch, wave 2
+  is months 4 to 6, wave 3 is later. A pair page is skipped when it would duplicate its parent:
+  dairy with product 8 (the product's only industry), aquaculture with product 20, and gym
+  and co-working with product 13, which leaves 98 pair pages.
+
+
+     Industry                                      Wave     Fitting products (by number)        Pair pages
+
+     Cold storage                                  1        1, 4, 6, 12, 17, 19                 6
+
+     Pharmacy                                      1        2, 4, 6                             3
+
+     Hospital                                      1        2, 5, 7, 11, 12, 13                 6
+
+     Clinic and diagnostic lab                     1        2, 6, 13                            3
+
+     Restaurant                                    1        1, 3, 6                             3
+
+     Cloud kitchen                                 1        1, 3                                2
+
+
+
+                                                                                                                  Page 13 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Industry                                     Wave   Fitting products (by number)   Pair pages
+
+     Pharma distributor                           1      2, 4, 6, 19                    4
+
+     Warehouse and logistics                      1      4, 6, 12, 17, 19               5
+
+     Server room and ISP                          1      5, 6, 7, 12                    4
+
+     Blood bank                                   2      2, 12                          2
+
+     Bakery and sweet shop                        2      1, 3                           2
+
+     Hotel and catering                           2      1, 3, 12, 13                   4
+
+     Supermarket and retail                       2      1, 3, 6, 12, 17                5
+
+     Food processing                              2      1, 4, 15, 17, 18               5
+
+     Dairy                                        2      1, 8, 12, 19                   3
+
+     Ice cream and frozen foods                   2      1, 6, 12                       3
+
+     Meat, fish and seafood                       2      1, 3, 6, 19                    4
+
+     Fruit and vegetable trading                  2      1, 4, 6                        3
+
+     Mushroom farm                                2      9, 13                          2
+
+     Greenhouse and nursery                       2      9, 11, 14                      3
+
+     Poultry farm                                 2      10, 11, 12                     3
+
+     Small factory                                2      12, 15, 16, 17, 18             5
+
+     Hatchery                                     3      9, 10                          2
+
+     Aquaculture                                  3      12, 20                         1
+
+     Orchard and farm                             3      11, 12, 14                     3
+
+     School and college                           3      5, 11, 13                      3
+
+     Pump house and water utility                 3      11, 16, 17                     3
+
+     Apartment and township                       3      7, 11, 12, 13                  4
+
+     Transport and fleet                          3      6, 19                          2
+
+     Gym and co-working                           3      13                             0
+
+
+
+
+                                                                                                     Page 14 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Industry slugs are the name in lowercase with hyphens, for example clinic-and-
+  diagnostic-lab . At launch, the 24 pair pages are the wave 1 industries crossed with
+  products 1 to 8.
+
+  Use-case slugs follow the same pattern, for example power-cut-alerts , door-open-
+  alerts , whatsapp-temperature-alerts , vaccine-storage-logging , audit-ready-
+  temperature-reports , humidity-monitoring-godown , leak-alerts , fuel-theft-
+  detection and machine-downtime-tracking . About 40 use cases are planned.
+
+
+  The combination gate
+  A pair page is saved as draft until all five checks pass. The gate runs in the admin
+  console and stores its result on the record.
+
+     1. Real buying situation. fitScore is 4 or 5, set by you.
+     2. Copy that exists nowhere else. At least 250 words in angle , problem and setup
+         written for this pair, and no more than 40% word-sequence overlap with any sibling
+         page in the same family. Both numbers are starting values.
+     3. Data that differs by pair. At least three of: default alert thresholds, report template,
+        standard or rule that applies, a typical failure scenario, an example alert message, a
+        recommended hardware variant, install notes, a plan recommendation.
+     4. Proof. At least one of: a real pilot or customer, a photograph of a real installation, a
+        named technical reviewer. Sample data is allowed only if it is labelled as sample.
+     5. Links and action. At least three inbound links from content pages (parent hub, sibling
+         industries, sibling products), and a call to action specific to the pair.
+
+  A page that fails stays unpublished. It is not published as noindex to "fix later", because a
+  page with no value to a user should not exist.
+
+
+  The city gate
+  City pages are the doorway-abuse risk, so they have a stricter gate:
+
+         You can install and support in that city: a named installer partner or your own visit
+         schedule, with a stated lead time.
+         Local facts that differ by city, such as the summer temperature and humidity range,
+         monsoon and power-cut patterns, and delivery and install time.
+         At least one local customer, pilot or partner you can name with consent.
+         Different content from every other city page, not the same text with the city name
+         swapped.
+
+
+                                                                                               Page 15 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+         No local business listing is claimed unless you have a staffed address that qualifies for
+         one.
+
+  Planned cities: Hyderabad at launch, then Warangal, Vijayawada, Visakhapatnam,
+  Bengaluru and Chennai only when each one has a local installer and a customer.
+
+
+  Generation workflow
+     1. You add or approve a fit row in the admin console, with a score and a one-line angle.
+     2. The system creates a draft with everything it can pre-fill from the catalogue:
+        thresholds, report template, product specs, related links.
+     3. You or a writer complete the fields that must be unique. AI drafting is allowed here,
+         but a person checks every technical claim.
+     4. The gate runs. On a pass the record moves to review, then to live.
+     5. Going live creates the pages row, adds the URL to the sitemap, updates internal links
+        on related pages, and triggers on-demand revalidation (section 6).
+     6. After 28 days the Search Console snapshot is checked. A page not indexed after 60
+        days, or with no impressions after 120 days, is improved, merged into its parent with a
+        redirect, or retired. Pruning weak pages is part of the system.
+
+
+  What not to generate
+         A page for every industry and city, or every product and city, such as the 20 by 6
+         combinations. Only the four hero products get city pages.
+         Pages that differ only by a swapped noun or synonym.
+         "Best monitor in [city]" pages, or pages for a city you cannot serve.
+         Pages for products you do not offer yet.
+         Filter, tag and search-result pages as indexable URLs.
+         Translations created only by running English pages through a translator. Hindi and
+         Telugu versions are written or reviewed by a native speaker and added only for pages
+         that already perform in English.
+
+
+  Page templates
+  Thirteen page families share a small set of templates, and each template fixes the section
+  order, the title pattern, the structured data and the call to action, so quality stays
+  consistent as pages multiply.
+
+
+
+
+                                                                                              Page 16 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Rules that apply to every template
+         Title. Unique per page, built by a helper from the record, with an editor override.
+         About 60 characters before the | ConnectAtom suffix is a good target. Google may
+         rewrite titles it finds unhelpful, so write for the reader first.
+         Meta description. 120 to 155 characters, built from the record's summary , naming one
+         concrete outcome. Google may replace it with text from the page.
+         One H1 that states the page's topic, then headings in order with no skipped levels.
+         Above the fold: what it is, who it is for, and one primary action.
+         Images: real product and installation photographs, descriptive alt text, width and
+         height set, next/image , and the first image only marked as priority.
+         Trust signals on every page: a named author or reviewer with a short bio on guides, a
+         "Reviewed on" date, real company contact details, sources for any rule or standard
+         mentioned, and real photographs.
+         Dates. Show "Updated" only when the content really changed, and store that in
+          lastmod .
+         Language and units: plain English, ₹, °C, and the words buyers use in India, such as
+         godown and cold storage.
+         Structured data. FAQ rich results stopped appearing in Google Search on 7 May 2026,
+         as reported with Google's own documentation note. Keep FAQ sections for readers,
+         do not expect a rich result from them, and do not add markup you cannot keep
+         accurate. Validate every template in the Rich Results Test and watch the Search
+         Console reports before rollout.
+
+
+  Core templates
+  Home
+
+         Sections: hero with tagline and a live device card, proof strip (pilots, alert response
+         time), how it works in three steps, products by buyer type, industries, one case study,
+         pricing teaser, FAQ, closing call to action.
+         Title: Wireless Temperature Monitoring with WhatsApp Alerts in India |
+         ConnectAtom
+         Schema: Organization and WebSite in the root layout.
+         Primary action: Get a free pilot. Secondary: chat on WhatsApp.
+
+  Product ( /products/[product] )
+
+
+
+
+                                                                                          Page 17 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+         Sections: summary and action, the problem, how it works (device, dashboard, alert),
+         features, specification table, example alert message, sample report preview, who it is
+         for (industries read from the fit records), plans and price, install and support, FAQ,
+         related products.
+         Title: {Product name} with {headline feature} | ConnectAtom , for example Cold
+         Room Temperature Monitor with WhatsApp Alerts | ConnectAtom .
+         Schema: Product and BreadcrumbList . Include offers only with a real, current
+         price. If the price depends on a quote, leave offers out instead of inventing one.
+         Primary action: Get a free pilot. Secondary: download the datasheet.
+
+  Industry ( /industries/[industry] )
+
+         Sections: the losses and risks in that industry, what to monitor, products that fit
+         (cards using each pair's angle ), rules or standards that apply (sourced), a short
+         checklist, a case study, FAQ.
+         Title: Temperature and Equipment Monitoring for {Industry} in India |
+         ConnectAtom
+         Schema: BreadcrumbList .
+         Primary action: Get a quote. Secondary: spoilage cost calculator.
+
+  Industry and product ( /industries/[industry]/[product] )
+
+         Sections: the industry's problem in its own words, how it is set up on that kind of site,
+         default alert table with the actual thresholds, an example alert, a report preview,
+         hardware variant and install notes, plan recommendation, proof, related pairs.
+         Title: {Product short name} for {Industry} | ConnectAtom , for example Medical
+         Fridge Monitor for Pharmacies | ConnectAtom .
+         Schema: BreadcrumbList only. Product markup stays on the canonical product page
+         so that dozens of pages do not repeat it.
+         Primary action: Get a {industry} pilot, with the pair stored on the lead.
+
+  Use case ( /use-cases/[useCase] )
+
+         Sections: the job to be done, how ConnectAtom does it step by step, products that
+         support it, an example configuration, FAQ.
+         Title: {Use case phrase} | ConnectAtom , for example Power Cut Alerts for Cold
+         Rooms and Server Rooms | ConnectAtom .
+         Schema: BreadcrumbList .
+
+
+
+
+                                                                                               Page 18 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  City ( /locations/[city] and /locations/[city]/[product] )
+
+         Sections: coverage and install lead time, local climate and power facts, products
+         available there, local partners, local customers (with consent), contact.
+         Title: {Product or service} in {City}: Install and Support | ConnectAtom .
+         Schema: BreadcrumbList . Add LocalBusiness only if you have a staffed address
+         that qualifies.
+         Primary action: Book a site survey in {city}.
+
+  Guide ( /guides/[slug] )
+
+         Sections: a two-sentence answer first, table of contents, steps and tables, sources,
+         related products and tools placed where they help, byline with author and reviewer,
+         updated date.
+         Title: the question or task plus the answer in a few words.
+         Schema: Article (headline, author, datePublished , dateModified ) and
+          BreadcrumbList .
+         Primary action: a soft one, a related tool or the datasheet.
+
+  Comparison, case study, tool, glossary
+
+         Comparison: verdict first, criteria table, fair "when each option wins", cost table. Title:
+          DIY ESP32 Data Logger vs Ready-Made Monitoring: Cost and Effort |
+         ConnectAtom .
+         Case study: customer type and city, problem, setup (devices, sites), results with
+         numbers and dates, quote, photographs. Published only with written consent. Title:
+         {Customer type} in {city}: {result with a number} | ConnectAtom .
+         Tool: what it does, the calculator, results with the assumptions shown, a written
+         explanation, a next step. Title: Food Spoilage Cost Calculator for Cold Rooms |
+         ConnectAtom .
+         Glossary: a 40 to 80 word definition, why it matters, an example, related terms and
+         products. Title: What Is a Temperature Excursion? | ConnectAtom .
+         Schema for all four: Article where it is editorial content, plus BreadcrumbList .
+
+
+
+
+                                                                                              Page 19 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Calls to action
+
+     Action                           Where                            What it records on the lead
+
+     Get a free pilot                 Product, pair, city, home        Landing page, product, industry,
+                                                                       city, pilot interest
+
+     Get a quote                      Industry, pricing                Site count, device estimate
+
+     Chat on                          Sticky button on mobile, every   A pre-filled message that names
+     WhatsApp                         commercial page                  the page, for example "Hi, I am
+                                                                       looking at the Cold Room Monitor
+                                                                       for cold storage"
+
+     Download                         Product pages                    Email or phone, product
+     datasheet
+
+     Use a calculator                 Guides, industry pages           Inputs and result, then an optional
+                                                                       "send me this"
+
+
+  Informational pages (guides, glossary, comparisons) lead with the soft actions, because a
+  reader asking a question is not ready for a quote form.
+
+
+  Shared components
+  One component library in packages/ui and packages/seo renders all templates:
+   Breadcrumbs , JsonLd , CtaBar , ProofStrip , SpecTable , AlertExample ,
+   ReportPreview , FaqBlock , PlanTable , AuthorReview , RelatedLinks and LeadForm . A
+  change to one component updates every page that uses it.
+
+
+  Technical SEO in Next.js
+  Every public page is generated from the catalogue and the pages registry, so technical
+  SEO is one shared layer in packages/seo , not per-page work. Page content changes
+  rarely, so pages are served from cache and rebuilt only when their data changes.
+
+
+
+
+                                                                                                      Page 20 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Rendering strategy
+
+     Page family                                  Rendering                               Refresh trigger
+
+     Home, product, industry,                     Pre-rendered at build with              Tag revalidation when the
+     product-by-industry                          generateStaticParams                    product, industry or fit
+                                                                                          record changes
+
+     City-product pages                           Pre-rendered for the approved           Tag revalidation on the
+                                                  cities only                             city page or its local proof
+
+     Guides, comparisons,                         Pre-rendered, cached                    Tag revalidation on edit or
+     glossary, case studies                                                               publish
+
+     Tools (calculators)                          Static shell, client-side calculation   Deploy
+
+     Quote, contact, pilot                        Dynamic, noindex                        None
+     request
+
+     Portal and admin ( app.                      Dynamic, behind login, noindex          None
+     and admin. hosts)
+
+
+  Rules that keep this predictable:
+
+         Build only what exists. generateStaticParams reads published rows from pages
+         where indexable = true . A page that fails its quality gate is never generated, so it
+         cannot leak into the sitemap by accident.
+         Unknown URLs return 404. Do not render a page for a slug that is not in the registry.
+         Soft-404s waste crawl budget.
+         Check the config before you copy it. Next.js 16 with Cache Components enabled
+         changes how caching is declared: you use 'use cache' , cacheLife and cacheTag
+         instead of the older route-segment options such as revalidate and dynamicParams ,
+         and generateStaticParams is expected to return at least one entry. Confirm against
+         the docs for the exact version you install, because these APIs have moved between
+         releases.
+
+
+  Metadata
+  One helper, buildMetadata(page) , takes a pages record and returns the whole
+   Metadata object, so no route writes its own tags.
+
+
+
+
+                                                                                                                 Page 21 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+          metadataBase is set once in the root layout to https://connectatom.com , so every
+         canonical and Open Graph URL is absolute.
+         Title is {primary keyword} | ConnectAtom , kept short enough to avoid truncation.
+         Description states the product, the buyer and one proof point. Both are written by
+         template and then overridden by hand on the 20 hero pages.
+         Canonical is always self-referencing and always the clean URL with no query string.
+         Filtered or tracked variants canonicalise to it.
+         Robots comes from the registry: index, follow for indexable pages, noindex,
+         follow for everything else.
+         Open Graph and Twitter cards reuse the brand OG image (1200×630) and swap the
+         title and description. Product pages may get a generated image later.
+         Metadata is streamed in recent Next.js versions, but crawlers that cannot handle that
+         get it in the initial HTML, so no extra config is needed.
+
+
+  Canonicals, parameters and duplicates
+         One URL per page: lowercase, hyphenated, no trailing slash, enforced in the proxy file
+         with a 308 redirect.
+         Tracking parameters ( utm_* , gclid , fbclid ) are stripped from canonicals and
+         never linked internally.
+         A product-by-industry page and its parent product page must differ in intent and
+         content. If a pair cannot clear that gate, it is merged into the product page and left out
+         of the build.
+         Retired or merged slugs go into the redirects collection. The proxy reads it and
+         issues a 301 to the single best replacement, never to the home page.
+
+
+  Sitemaps and robots
+          app/sitemap.ts with generateSitemaps splits the URL list into chunks, since each
+         sitemap file is limited to 50,000 URLs. At 123 to 465 pages you need one chunk, but
+         building it this way means nothing changes at 10 times the size.
+         Next.js does not generate a sitemap index for you. Add a small app/sitemap-
+         index.xml/route.ts that lists each chunk, and submit that one URL in Search
+         Console.
+         Each entry carries lastModified taken from the page's real content change date, not
+         the build time. Fake freshness teaches Google to ignore the field.
+
+
+
+
+                                                                                             Page 22 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+           app/robots.ts allows public paths, disallows /api/ , /quote , and the portal and
+           admin hosts, and points to the sitemap index.
+           Do not use robots.txt to keep a page out of the index. A page blocked there cannot
+           be crawled, so Google never sees its noindex tag and the URL can still show up. Use
+           noindex on pages you want crawled but not indexed, and put the page behind login if
+           it is private.
+
+
+  Structured data
+  A JsonLd component renders one script tag per page from typed builders in
+   packages/seo .
+
+
+     Page                           Schema                               Notes
+
+     All                             Organization (home), WebSite ,      Breadcrumbs mirror the visible
+                                     BreadcrumbList                      trail
+
+     Product                         Product with a brand , plus Offer   No price on the page means no
+                                    only where a real, public price is    Offer . Never invent ratings or
+                                    shown                                reviews
+
+     Guide,                          Article with author and             Author comes from the authors
+     comparison                      datePublished and dateModified      collection
+
+     Case study                      Article                             Only with a customer's written
+                                                                         approval
+
+     Glossary                        DefinedTerm                         Optional, low priority
+
+     Location pages                  LocalBusiness only when you have    Otherwise skip it
+                                    a real, staffed local address
+
+
+  FAQ content stays on the page for readers, but do not expect a rich result from it: Google
+  removed FAQ rich results in 2026. Validate every template in the Rich Results Test before
+  launch and mark up only what is visible on the page.
+
+
+  Performance and Core Web Vitals
+  The targets are the published "good" thresholds, measured at the 75th percentile of real
+  users: LCP at or under 2.5 s, INP at or under 200 ms and CLS at or under 0.1.
+
+
+
+
+                                                                                                        Page 23 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+         Server-render all marketing content. Only calculators, the quote form and the live
+         demo use client components.
+         Use next/image with explicit sizes, and mark only the hero image as priority .
+         Load the three brand fonts through next/font , which self-hosts them and removes
+         the layout shift.
+         Load analytics and chat widgets after interaction or idle time.
+         Put a performance budget in CI: fail the build if a template's JavaScript or image
+         weight crosses the agreed limit.
+         India-first traffic is mostly mid-range Android on mobile networks, so test on a
+         throttled mobile profile, not a fast laptop.
+
+
+  On-demand revalidation
+  When an admin publishes or edits a record, the console calls a protected
+   /api/revalidate route on the web app with a shared secret. The route calls
+   revalidateTag for the affected tags, for example product:cold-room-monitor ,
+   industry:pharma , fits and sitemap . The product page, its industry pairs, its guides
+  and the sitemap refresh without a full redeploy. The tag list is built from the entity
+  relations in the previous section, so an edit to one product reaches every page that
+  mentions it.
+
+
+  Internationalisation
+  Launch in English for India only. Do not add hreflang until a second language exists.
+  When Telugu or Hindi pages are added, put them under /te/ and /hi/ , translate the full
+  page, and add reciprocal hreflang tags plus an x-default . Machine-translated thin
+  pages would count against the site.
+
+
+  Internal linking and topic clusters
+  Internal links are generated from the relationship tables, not placed by hand. That is what
+  turns a pile of pages into one connected site: every link exists because two records are
+  related in the database.
+
+
+  Hub and spoke
+  Each of the 20 products is a hub. Its spokes are the pages that exist because of it.
+
+
+
+
+                                                                                              Page 24 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Hub                      Spokes that link up to it                      Hub links down to
+
+     Product                  Product-by-industry pages, city pages,         The best 6 to 8 of those, ranked
+     page                     use cases, guides, comparisons, case           by fit score
+                              studies, glossary terms, tools
+
+     Industry                 Product-by-industry pages, industry            Every product that fits that
+     page                     guides, case studies                           industry
+
+     Topic page               Guides, glossary terms, tools on that          Related products
+                              subject
+
+
+  Spokes also link sideways to two or three siblings, so a visitor and a crawler can move
+  across a cluster without going back to the hub.
+
+
+  Link rules generated from data
+
+     Link                                         Built from                            Anchor text
+
+     Product → industries it                      productIndustryFits where fit         "{Product} for
+     serves                                       score is 3 or higher                  {industry}"
+
+     Industry → products                          Same table, reversed                  Product name
+
+     Product → guides                             guides.productIds                     Guide title
+
+     Guide → product it                           guides.productIds , first item        Product name, in the
+     recommends                                                                         first third of the text
+
+     Comparison → both                            comparisons.productIds                Product names
+     products
+
+     City page → parent                           cityProductPages                      "{Product} in {city}"
+     product and neighbouring
+     cities
+
+     Case study → product and                     caseStudies                           Product name,
+     industry                                                                           industry name
+
+     Glossary term → products                     glossaryTerms.productIds              Product name
+     that measure it
+
+     Tool → product it feeds                      tools.productIds                      Product name
+
+
+
+
+                                                                                                            Page 25 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Anchor text is descriptive and varies by template. Never use "click here" and never repeat
+  one exact-match anchor on every page.
+
+
+  Link budget
+         Aim for 3 to 10 contextual links in the body of a page, plus the navigation and footer.
+         Keep every page within 3 clicks of the home page.
+         Pages you do not want indexed get no links from indexable pages, except the quote
+         and contact calls to action.
+         A product page links to at most 8 product-by-industry pages. If it has more, link to the
+         industry hub instead and let that page list the rest.
+
+
+  Navigation, breadcrumbs and footer
+         Header: Products, Industries, Solutions, Resources, Pricing, Quote. Products and
+         Industries open a mega menu generated from the registry, so a new product appears
+         automatically.
+         Breadcrumbs appear on every page below the home page and match the
+          BreadcrumbList markup exactly, for example Home › Products › Cold room monitor.
+         Footer: all 20 products, the top industries, the top cities, company and legal links. It
+         gives every product page at least one link from every page of the site.
+         Related block: each page ends with "Related products", "Related guides" and "Next
+         step", all driven by the same relations.
+
+
+  Orphan and quality checks
+  A nightly job walks the relation graph and reports:
+
+         indexable pages with no inbound internal links
+         pages deeper than 3 clicks
+         links that point to redirected, noindex or 404 URLs
+         products with fewer than 3 inbound spokes
+
+  The job writes the result to a table in the admin console and fails the deploy check if there
+  is any orphan. This is the cheapest way to keep a programmatic site healthy as it grows.
+
+
+
+
+                                                                                              Page 26 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Content engine
+  The page system gives you structure. Content is what makes each page worth indexing. A
+  solo founder cannot write 465 pages by hand, so the engine splits every page into a part
+  that comes from data and a part only you can write.
+
+
+  What comes from data and what you write
+
+     Part of the page                             Source                              Who produces it
+
+     Specs, sensor range, battery                 products                            You, once per product
+     life, connectivity, price band
+
+     Which problems it solves,                    problems ,                          You, once, then
+     which industries it fits                     productIndustryFits                 reused everywhere
+
+     Compliance and regulation                    industries                          You, with a source for
+     notes for the industry                                                           every claim
+
+     Industry-specific intro, the                 productIndustryFits.copy            You, 150 to 300 words
+     real alert thresholds, a                                                         per pair
+     worked example
+
+     Local context, such as climate               cities                              You, with local proof
+     or cold-chain activity
+
+     FAQs                                         faqs , linked to a product and an   You and real customer
+                                                  industry                            questions
+
+     Photos, dashboard                            Media library                       You, from real installs
+     screenshots, install photos
+
+
+  The rule: a generated page must contain something a visitor cannot get from the parent
+  product page. If the only difference is a swapped keyword, the page does not ship.
+
+
+  Quality gate before a page can be indexed
+  A page's indexable flag stays false until all of these pass:
+
+         at least 300 words of copy that is unique to the page
+         at least one unique data point or example, such as a threshold, a regulation or a
+         customer story
+         at least one real image, or a screenshot of the product in use
+
+
+
+                                                                                                         Page 27 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+         two or more FAQs written for this combination
+         a named author and a last-reviewed date
+         a clear next step, which is quote, pilot or datasheet
+
+  These numbers are starting values. Adjust them after you see which pages Google keeps
+  and which it drops.
+
+  Google's spam policies cover scaled content abuse and doorway pages: many near-
+  identical pages made to rank rather than help. The gate exists to keep you on the right
+  side of that line. Pages that fail stay as drafts, or are folded into the parent page.
+
+
+  Content types and the calendar
+
+     Type                              Purpose                Example                     Launch   Month
+                                                                                                   12
+
+     Product pages                     Convert                Cold room monitor           20       20
+
+     Product-by-                       Capture specific       Cold room monitor for       24       98
+     industry                          searches               pharma
+
+     Guides                            Teach, build trust     How to monitor cold room    12       60
+                                                              temperature
+
+     Comparisons                       Capture buyers         Wired vs wireless sensors   4        20
+                                       choosing
+
+     Use cases                         Show applications      Vaccine storage alerts      6        20
+
+     Glossary                          Capture early          What is a data logger       15       60
+                                       research
+
+     Case studies                      Prove it works         Cold storage in Hyderabad   2        12
+
+     Tools                             Earn links and leads   Cold room alert threshold   2        6
+                                                              calculator
+
+
+  These are planning targets for the content you write. They are not the full page count:
+  industry hubs, topic hubs, city pages and utility pages sit on top, so the totals in the page-
+  system section are higher. Order of work: product pages first, then the 24 launch pairs for
+  your hero products, then guides that answer the questions your first customers actually
+  ask.
+
+
+
+
+                                                                                                        Page 28 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Production workflow
+     1. Brief. The admin console generates a brief from the record: keyword, intent, related
+        products, required sections, internal links.
+     2. Draft. You or an assistant drafts from the brief. An AI draft is only a starting point.
+     3. Add the human part. You add real thresholds, a photo, a number from a customer site,
+         and a source for each factual claim.
+     4. Review. A second pair of eyes checks facts, especially compliance and safety claims.
+     5. Gate and publish. The quality gate runs, then indexable turns true and the
+         revalidation webhook fires.
+     6. Review at 90 days. Pages with impressions but no clicks get rewritten. Pages with no
+        impressions get merged or removed.
+
+
+  Rules for trust
+         Cite the regulation or standard for any compliance statement, for example food safety
+         or vaccine storage rules, and link to the primary source.
+         No invented testimonials, ratings or customer logos. Use real ones with written
+         permission, or none.
+         Show who wrote each guide and when it was last reviewed.
+         Do not claim certifications, accuracy classes or approvals that you do not hold.
+
+
+  Public user journey
+  This is what a visitor experiences, from the first search to a paying customer. Each step
+  maps to a page type, a conversion action and a record in the database.
+
+
+  Stages
+
+     Stage                    Visitor does        Page              Action asked   Record created
+
+     Find                     Searches "cold      City-product,     Read, click    Session with
+                              room                product-by-       through         origin (landing
+                              temperature         industry, guide                  page, entities,
+                              monitor                                              source)
+                              Hyderabad"
+
+
+
+
+                                                                                                 Page 29 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Stage                    Visitor does         Page               Action asked      Record created
+
+     Understand               Reads what it        Product page       See the           Event:
+                              does, sees a                            datasheet or      view_product
+                              dashboard                               the demo
+                              screenshot and a
+                              price band
+
+     Evaluate                 Compares             Comparison,        Use the tool,     Event: use_tool ,
+                              options, uses a      tool, case study   save the result   optional email
+                              calculator
+
+     Ask                      Wants a price for    Quote page         Submit the        leads row, with
+                              their site                              quote form or     origin attached
+                                                                      tap WhatsApp
+
+     Pilot                    Agrees to try a      Pilot request      Confirm the       quotes and
+                              kit                                     site, the         accounts rows
+                                                                      contact and
+                                                                      the number of
+                                                                      sensors
+
+     Buy                      Pays for the kit     Checkout           Pay               jobs (install),
+                              and the plan         (Razorpay)                           subscription
+
+     Use                      Logs in, sees live   Portal             Add alert         Tenant and devices
+                              readings                                contacts          activated
+
+     Stay                     Gets reports,        Portal, email,     Renew or          Renewal and upsell
+                              renews, adds         WhatsApp           expand            tasks
+                              sensors
+
+
+
+  Conversion points on every page
+         Primary button is always one of: Get a quote, Book a pilot, or Download the datasheet.
+         It sits in the header and in the page footer block.
+         WhatsApp button opens a pre-filled message that includes the page title and a short
+         code, so you know which page the lead came from.
+         Call-back request is a two-field form: phone number and best time.
+         Sticky mobile bar shows the button and the phone number, because most Indian B2B
+         visitors arrive on a phone.
+
+
+
+
+                                                                                                          Page 30 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  The quote form
+  Keep it short. Long forms lose leads.
+
+     1. What do you want to monitor? (the product, pre-filled from the page)
+     2. How many points or sensors?
+     3. Where is the site? (city and PIN code)
+     4. Name and phone, with email optional
+     5. A free-text box: "Anything we should know?"
+
+  On submit the server validates the data, stores the lead with the page that sent it, notifies
+  you on WhatsApp and email, and shows a thank-you page with the next step and
+  expected reply time. The thank-you page is noindex and carries the conversion event.
+
+
+  Attribution
+  When a visitor lands, the site stores the landing URL, the pages record, the product and
+  industry ids, the source and medium, and any campaign tags in a first-party cookie or in
+  storage on the device. The quote form reads that and writes it into leads.origin . Later, a
+  deal's revenue can be traced back to the page and the entities that produced it. This is
+  what tells you which of the 20 products, which industries and which cities actually make
+  money, so you can build more of what works and drop the rest.
+
+
+  Consent and privacy
+  India's Digital Personal Data Protection Rules were notified in November 2025 and phase
+  in over about 18 months, so build the consent layer now rather than later.
+
+         Show a plain notice at every form: what you collect, why, and how to withdraw.
+         Use a separate, unticked consent box for marketing messages and WhatsApp follow-
+         ups.
+         Keep a consent log: who agreed, to what wording, when and from which page.
+         Collect only what you need. Never ask for more than the quote requires.
+         Give users a way to see, correct and delete their data, and honour it.
+         Load analytics after consent where your setup requires it.
+         Get a lawyer to review the notice and the retention policy before launch. This
+         document is not legal advice.
+
+
+
+
+                                                                                          Page 31 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Trust elements
+  Put proof close to the button: a real install photo, a customer name with permission, a
+  warranty line, an installation promise, and the support hours. A first-time buyer of a
+  monitoring system is mostly worried about two things: will it work in my cold room, and
+  who answers the phone when an alarm fires.
+
+
+  Customer portal
+  The portal is the product the customer pays for every month. It lives in apps/console on
+  the app.connectatom.com host, behind Clerk login, and is noindex throughout. It is a
+  multi-tenant app: every query is scoped by tenantId , taken from the session and never
+  from the URL or the request body.
+
+
+  Routes
+
+     Route                                        Purpose                                Main data
+
+      /                                           Overview: devices online, active       devices , readings ,
+                                                  alerts, last 24 hours                  alerts
+
+      /sites and                                  Locations and the rooms or             sites
+      /sites/[siteId]                             assets within them
+
+      /devices and                                Status, battery, signal, live chart,   devices , readings
+      /devices/[deviceId]                         history, settings
+
+      /alerts                                     Open, acknowledged and                 alerts
+                                                  resolved alerts, with who
+                                                  handled each
+
+      /rules                                      Thresholds, delays and quiet           rules
+                                                  hours per device or group
+
+      /contacts                                   Who gets called, WhatsApp-ed           contacts , escalation
+                                                  or emailed, in what order              steps
+
+      /reports                                    Daily and monthly reports,             reports
+                                                  exports as PDF or CSV
+
+      /billing                                    Plan, invoices, payment method,        subscriptions ,
+                                                  add sensors                            Razorpay
+
+
+
+
+                                                                                                           Page 32 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Route                                        Purpose                       Main data
+
+      /team                                       Invite users, set roles       Clerk organisation
+
+      /support                                    Raise a ticket, see status    tickets
+
+      /settings                                   Company profile, time zone,   tenants
+                                                  notification preferences
+
+
+
+  Roles
+
+     Role                Can do
+
+     Owner               Everything, including billing and removing users
+
+     Admin               Everything except billing and ownership
+
+     Operator            Acknowledge alerts, edit rules and contacts
+
+     Viewer              Read dashboards and reports only
+
+
+  Roles live in the Clerk organisation. The server checks the role on every action, since
+  hiding a button is not a permission check.
+
+
+  The alert flow, which is the core promise
+     1. A sensor sends a reading to the ingest service.
+     2. The service stores it and checks it against the device's rules.
+     3. On a breach that lasts longer than the set delay, it opens an alert.
+     4. It notifies the first contact by their chosen channel, for example WhatsApp, SMS, a
+        call or email.
+     5. If nobody acknowledges within the set time, it escalates to the next contact.
+     6. When the reading returns to normal, it closes the alert and records who handled it
+         and how long it took.
+     7. A missing heartbeat from a device raises its own "device offline" alert, because
+        silence is also a failure.
+
+  Every step is logged, so a customer or an auditor can see exactly what happened and
+  when.
+
+
+
+
+                                                                                                 Page 33 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Reports that sell renewals
+         A daily summary of min, max, average and the number of alerts per device.
+         A monthly compliance-style report that a pharmacy, kitchen or cold store can show an
+         inspector. Do not call it certified unless it is.
+         A "value delivered" line on the overview: alerts caught, hours of monitoring, readings
+         stored. A customer who sees this has a reason to renew.
+
+
+  Onboarding inside the portal
+  A new tenant sees a short checklist: add the first site, claim a device by its code, set the
+  first rule, add two alert contacts, send a test alert. When all five are done, the account is
+  marked active and the customer-success task in the CRM closes. Most churn in
+  monitoring products happens in the first month, when the sensor is installed but nobody
+  has set up the contacts.
+
+
+  Plans and limits
+  Plans come from the plan and subscription model in the earlier playbook. The portal
+  enforces them: the number of devices, the length of data history, the notification
+  channels and the number of users. When a limit is hit, show an upgrade prompt rather
+  than failing silently.
+
+
+  Admin side
+  The admin console is for ConnectAtom staff only. It runs in the same apps/console
+  codebase on admin.connectatom.com , with its own login rules, and it is never indexed or
+  linked from the public site. It has five jobs: run the catalogue and SEO, manage leads and
+  customers, run installs and the device fleet, handle billing, and support customers.
+
+
+  Staff roles
+
+     Role                  Access
+
+     Founder               Everything
+
+     Sales                 Leads, accounts, quotes, activities. No billing
+                           changes, no catalogue edits
+
+
+
+
+                                                                                           Page 34 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Role                  Access
+
+     Content               Catalogue, pages, guides, redirects. No customer
+                           data
+
+     Technician            Jobs, devices, tickets. Read-only on accounts
+
+     Support               Tickets, tenants (read), device status
+
+
+  Every staff action is written to an audit log with who, what, when and the before and after
+  values. Staff accounts need two-step login.
+
+
+  Admin modules
+
+     Module                    Routes                                  What it does
+
+     Catalogue                  /catalogue/products , /industries ,    Create and edit the records the
+                                /fits , /use-cases , /problems ,       public pages are built from
+                                /cities , /faqs
+
+     Pages and                  /pages , /redirects , /seo/health      See every page with its status,
+     SEO                                                               gate result, indexation state and
+                                                                       clicks. Edit meta, flip indexable ,
+                                                                       add redirects
+
+     Content                    /guides , /comparisons , /case-        Brief, draft, review and publish
+                               studies , /tools , /glossary ,          content
+                                /authors
+
+     Leads                      /leads                                 Inbox, filters, assignment, follow-
+                                                                       up
+
+     Accounts                   /accounts , /contacts , /quotes        Companies, people, quotes,
+                                                                       history
+
+     Jobs                       /jobs                                  Installations and site visits, with a
+                                                                       technician and a date
+
+     Fleet                      /devices , /inventory                  Every device across every
+                                                                       customer, firmware, stock levels,
+                                                                       serial numbers
+
+     Billing                    /subscriptions , /invoices             Plans, renewals, failed payments,
+                                                                       manual invoices
+
+
+
+
+                                                                                                        Page 35 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Module                    Routes                                                   What it does
+
+     Support                    /tickets                                                Customer issues, with SLA timers
+
+     Analytics                  /reports                                                Funnel, revenue by page and
+                                                                                        entity, search performance
+
+     Settings                   /staff , /audit                                         Staff, roles, audit log
+
+
+
+  The SEO control room
+  The pages module is the heart of the programmatic system. Its list view shows one row
+  per page.
+
+
+     Column                                       Meaning
+
+     URL and family                               Which template produced it
+
+     Gate                                         Pass or fail, with the failing rule
+
+     State                                        Draft, published, noindex, redirected, removed
+
+     Indexed                                      Whether Search Console reports it as indexed
+
+     Clicks and impressions                       Last 28 days
+
+     Leads and revenue                            From leads.origin
+
+     Inbound links                                From the nightly graph check
+
+     Last reviewed                                Date and author
+
+
+  Three bulk actions matter most: publish a batch that passed the gate, noindex a batch
+  that is underperforming, and merge a page into its parent with a redirect. Each of them
+  triggers the revalidation webhook.
+
+
+  Catalogue editing flow
+     1. Staff edits a product or a fit record.
+     2. The save validates required fields, such as slug, specs, price band and at least one
+         problem.
+     3. A preview link shows the page as the public will see it.
+
+
+
+
+                                                                                                                      Page 36 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     4. Publish writes the record, recomputes dependent pages and calls revalidateTag for
+         the affected tags.
+     5. The change goes into the audit log.
+
+  Slug changes are blocked once a page is published unless a redirect is created in the
+  same step.
+
+
+  Inventory and fleet
+         Every device has a serial number, a hardware revision, a firmware version, a batch and
+         a state: in stock, allocated, installed, returned or retired.
+         Claiming a device in the portal links it to a tenant. Admin can unclaim and reassign it
+         when a customer leaves.
+         Firmware rollouts go to a test group first, then in stages, with the ability to stop and
+         roll back.
+         Low stock on any SKU creates a purchase task.
+
+
+  Lead and customer management
+  The CRM is built into the admin console, so a lead's search origin, quote, install and
+  subscription all sit in one record. You do not need a separate tool at this stage.
+
+
+  Pipeline stages
+
+     Stage                  Meaning                                      Exit rule
+
+     New                    Form or WhatsApp received                    Contacted within the target
+                                                                         time
+
+     Contacted              First reply sent                             Need and site confirmed
+
+     Qualified              Real site, real need, a decision-maker, a    Quote sent
+                            budget range
+
+     Quoted                 Quote delivered                              Accepted, or a follow-up date
+                                                                         set
+
+     Pilot                  Kit sent or install booked                   Install done and device online
+
+     Won                    Paid, subscription active                    Handed to onboarding
+
+
+
+
+                                                                                                   Page 37 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Stage                  Meaning                                Exit rule
+
+     Lost                   Declined or silent                     Reason recorded
+
+     Nurture                Not now                                Re-contact date set
+
+
+  Every move between stages is an activities row with a timestamp, so you can measure
+  time in stage and conversion between stages.
+
+
+  Lead scoring
+  A simple points score helps you call the best leads first. These are starting weights to
+  tune from your own wins.
+
+
+     Signal                                               Points
+
+     Product is one of the four hero products             +20
+
+     Company email, not a free mail address               +10
+
+     More than 5 sensors requested                        +15
+
+     Site is in a city you can install in within a week   +15
+
+     Phone number given                                   +10
+
+     Arrived from a product-by-industry or city page      +10
+
+     Downloaded a datasheet or used a tool first          +10
+
+     Asked for a price or a call-back                     +10
+
+
+  A score of 60 or more goes to the top of the list and triggers an instant WhatsApp alert to
+  you.
+
+
+  Assignment and response time
+         Solo at first: every lead comes to you. Add round-robin assignment by city or product
+         when Sales joins.
+         Target a first reply within 15 minutes in working hours and by 9 am the next morning
+         for anything after hours. Fast replies are the single biggest lever on conversion for
+         inbound leads.
+         An overdue lead turns red in the inbox and sends a reminder.
+
+
+
+                                                                                          Page 38 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Follow-up automation
+
+     Trigger                                      Automatic action
+
+     New lead                                     Acknowledge by WhatsApp and email with the
+                                                  expected reply time, notify staff
+
+     Quote sent                                   Task to follow up in 2 days, then 5, then 10
+
+     Datasheet downloaded, no quote               Email after 3 days with a case study
+
+     Pilot installed                              Check-in at day 3 and day 14
+
+     Lost                                         Re-contact task at 90 days
+
+
+  Send marketing messages only to people who agreed to them. Transactional messages,
+  such as a quote or an alert, are separate.
+
+
+  Quotes
+  A quote is built from the product and plan catalogue, with the kit price, installation, the
+  monthly plan and GST. It is sent as a PDF and as a web link, and the customer can accept it
+  online. Acceptance creates the account, a job and, once paid, the subscription.
+
+
+  From win to retention
+     1. Won. The lead converts to an account with its contacts, and a tenant is created.
+     2. Install. A job is scheduled. The technician confirms the sensors are online and
+         photographs the site.
+     3. Onboarding. The portal checklist from the previous section completes, or a human
+        calls.
+     4. Day 30 review. Check alerts, contacts and reports with the customer and ask for a
+         testimonial if it went well.
+     5. Expand. Suggest more sensors, a second site or a second product, matched to the fit
+         table.
+     6. Renew. Remind 30 days and 7 days before renewal. Handle failed payments with a
+        retry and a human call.
+
+
+
+
+                                                                                                 Page 39 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Health score and churn signals
+  Flag an account when any of these appear: no logins for 30 days, devices offline for more
+  than 48 hours, no alert contact confirmed, a support ticket unresolved past its SLA, or a
+  payment failure. These accounts go on a weekly call list.
+
+
+  Support and SLA
+  Tickets have a priority, an owner and a timer. A device that is down during an active alert is
+  urgent and is answered at once. A how-to question can wait a day. Every ticket's
+  resolution can feed a new FAQ or guide, which brings support back into the content
+  engine.
+
+
+  Analytics and measurement
+  Measurement answers one question: which pages and entities turn into paying
+  customers. Rankings and traffic are only the first half.
+
+
+  Tools
+
+     Tool                                         Used for
+
+     Google Search Console                        Impressions, clicks, queries, indexing status,
+                                                  sitemap health
+
+     Search Console bulk export to                Daily query and page data kept beyond the
+     BigQuery                                     interface's limits, joined with your own tables
+
+     Google Analytics 4                           Sessions, events and conversions
+
+     First-party database                         Leads, quotes, revenue, tied to origin
+
+     Core Web Vitals                              Field data from Search Console, lab checks in CI
+
+     Uptime monitor                               Site and ingest availability
+
+
+  The exported Search Console data starts accumulating only from the day you switch it on,
+  so set it up in week one even if you do not look at it yet.
+
+
+
+
+                                                                                                    Page 40 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Events to track
+
+     Event                                    When it fires
+
+      view_product                            Product page viewed
+
+      view_pair                               Product-by-industry or city page viewed
+
+      use_tool                                A calculator is used
+
+      download_datasheet                      Datasheet downloaded
+
+      click_whatsapp                          WhatsApp button tapped
+
+      request_callback                        Call-back form sent
+
+      submit_quote                            Quote form submitted (the main conversion)
+
+      pilot_requested                         Pilot form submitted
+
+      purchase                                Payment confirmed
+
+
+  Each event carries the page id, product id, industry id and city id as parameters, so
+  reports can be cut by entity.
+
+
+  The funnel and the numbers to watch
+
+     Stage                           Metric                                       Starting target to aim for
+
+     Visibility                      Impressions on indexed pages                 Rising month over month
+
+     Click                           Click-through rate on product pages          Above 2%, then improve
+                                                                                  titles
+
+     Visit to lead                   Quote form submit rate                       2 to 4% on pair and city
+                                                                                  pages
+
+     Lead to                         Share of leads that qualify                  Above 40%
+     qualified
+
+     Qualified to                    Share that start a pilot                     Above 30%
+     pilot
+
+     Pilot to paid                   Share that convert                           Above 60%
+
+
+
+
+                                                                                                             Page 41 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Stage                           Metric                                  Starting target to aim for
+
+     Retention                       Customers active at month 3 and month   Above 90% and 80%
+                                     12
+
+
+  These targets are assumptions to test, not benchmarks from a source. Replace them with
+  your own numbers once you have 30 or more leads.
+
+
+  SEO health metrics
+         Indexed pages divided by submitted pages, per family. A low ratio on one family
+         means its template or its gate is the problem.
+         Pages with impressions and zero clicks after 90 days.
+         Pages with zero impressions after 90 days.
+         Crawl errors, soft 404s and redirect chains.
+         Core Web Vitals pass rate per template.
+         Number of orphan pages, which must stay at zero.
+
+
+  Reports you will actually use
+     1. Weekly page report. Top pages by leads, top queries, new pages indexed, pages that
+         dropped.
+     2. Monthly entity report. Leads and revenue by product, by industry and by city. This
+         decides what to build next.
+     3. Quarterly pruning list. Pages to improve, merge or remove.
+     4. Customer health report. Accounts flagged by the churn signals.
+
+
+  A note on attribution
+  Leads that arrive by WhatsApp or phone lose their web trail. The page-coded WhatsApp
+  message and a "how did you find us?" question on the first call recover most of it. Record
+  the answer in leads.origin as a manual source.
+
+
+  Roll-out plan and risks
+  Build in phases and release pages in batches. Each phase ends at a gate: you move on only
+  when the numbers say the last batch earned it. Launching hundreds of thin pages on day
+  one is the fastest way to get the whole domain judged low quality.
+
+
+
+                                                                                                      Page 42 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  Phases
+
+     Phase                       Weeks            Build                             Gate to move on
+
+     0. Foundation               1 to 2           Monorepo, catalogue models,       Site deploys, sitemap
+                                                   pages registry,                  submitted, events fire
+                                                   buildMetadata , sitemap,
+                                                  robots, analytics, Search
+                                                  Console, consent notice
+
+     1. Core pages               3 to 5           Home, 20 product pages, 4         20 products indexed, a test
+                                                  hero product-by-industry          lead flows to the CRM with
+                                                  templates, quote and contact      origin
+                                                  flow, WhatsApp button
+
+     2. Pairs and                6 to 9           The 24 launch pairs, 12 guides,   Pairs index at a healthy rate
+     proof                                        first case study, Hyderabad       and a first lead arrives from
+                                                  pages for hero products           a pair page
+
+     3. Console                  8 to 12          Portal basics, admin leads and    A pilot customer sees live
+                                                  accounts, SEO control room,       readings and receives a real
+                                                  alert flow                        alert
+
+     4. Scale                    13 to 24         More pairs in batches,            Leads and revenue per page
+                                                  comparisons, glossary, tools,     justify each new batch
+                                                  further cities, pruning of weak
+                                                  pages
+
+     5. Expand                   25               Remaining fits, new languages,    Optional, driven by the
+                                 onwards          partner pages                     entity report
+
+
+  Phases 2 and 3 overlap, because the console is needed as soon as the first real customer
+  arrives. The week ranges are a guide for a solo build, so adjust them to your hours.
+
+
+  Releasing programmatic pages safely
+     1. Release in batches of 20 to 30 pages from one family.
+     2. Wait 3 to 4 weeks and check how many Search Console reports as indexed and how
+         many get impressions.
+     3. If most are indexed and getting impressions, release the next batch. If most are
+         "crawled, not indexed", stop and improve the content before adding more.
+     4. After 90 days, prune: improve, merge or remove the weak pages.
+
+
+
+                                                                                                              Page 43 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+  A large share of pages sitting in "crawled, not indexed" is a quality signal, not a technical
+  fault. More pages will not fix it.
+
+
+  Pre-launch checklist
+         Every public page returns 200, has one H1, a unique title and description, and a self-
+         referencing canonical.
+         The sitemap index lists only indexable URLs and is submitted in Search Console.
+          robots.txt blocks no page you want crawled, and no noindex page is blocked
+         there.
+         Structured data passes the Rich Results Test on each template.
+         Quote, contact and thank-you pages are noindex and fire the right events.
+         Portal and admin hosts are noindex and behind login.
+         Redirects from any old URLs are in place.
+         Mobile Core Web Vitals pass on a throttled profile.
+         The consent notice and privacy policy are live, and a lawyer has read them.
+         The nightly orphan check runs and shows zero orphans.
+
+
+  Risks and how to handle them
+
+     Risk                                         Why it matters              Mitigation
+
+     Thin or doorway pages                        Can drag down the whole     The quality gate, batch releases,
+                                                  domain                      pruning
+
+     Pages that are near-                         Cannibalise each other      Merge pairs that do not differ in
+     duplicates                                                               intent
+
+     Over-building before first                   Months spent, no revenue    Phase gates and the hero-
+     customers                                                                product focus
+
+     Solo maintenance load                        Admin, portal and content   Build only the admin screens a
+                                                  all fall to you             task needs this month
+
+     Unverified claims                            Legal and trust risk        Source every compliance claim,
+                                                                              no invented proof
+
+     Search algorithm changes                     Traffic can move            Diversify with WhatsApp,
+                                                                              referrals, partners and direct
+                                                                              outreach
+
+
+
+
+                                                                                                               Page 44 of 45
+ConnectAtom: Next.js SEO and Platform Blueprint
+
+
+
+
+     Risk                                         Why it matters              Mitigation
+
+     Data protection                              Fines and loss of trust     Consent log, minimal data,
+     obligations                                                              deletion flow, legal review
+
+     Alert failure                                A missed alert breaks the   Heartbeat checks, escalation,
+                                                  core promise                tested notification providers
+
+     Slow inbound                                 SEO takes months            Keep direct outreach running
+                                                                              alongside, as in the 6-month plan
+
+
+  SEO is slow. The pages you publish this month will mostly start to matter in months three
+  to six, so treat the content as a long-term asset and keep your first customers coming
+  from direct outreach and referrals in the meantime.
+
+
+
+
+                                                                                                            Page 45 of 45
+

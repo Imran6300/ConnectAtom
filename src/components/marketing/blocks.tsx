@@ -1,9 +1,14 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import { AvailabilityBadge } from "@/components/ui/primitives";
+import { DeviceArt } from "@/components/visuals";
 import { Bell, Cpu, LineChart, ShieldCheck, Wifi } from "lucide-react";
 import { LeadForm } from "@/components/forms/LeadForm";
 import { PLANS } from "@/content/plans";
-import { inr, type Faq, type Product } from "@/content/products";
+import { inr } from "@/lib/format";
+import type { Product } from "@/lib/catalogue/types";
+
+export type Faq = { q: string; a: string };
 
 export const Section = ({ children, dark, id, className = "" }: { children: ReactNode; dark?: boolean; id?: string; className?: string }) => (
   <section id={id} data-theme={dark ? "dark" : undefined} className={`section ${dark ? "circuit-bg" : ""} ${className}`}><div className="container-x">{children}</div></section>
@@ -61,18 +66,36 @@ export function HowItWorks() {
 
 export function ProductCard({ p, note }: { p: Product; note?: string }) {
   return (
-    <Link href={`/products/${p.slug}`} className="card block no-underline transition hover:-translate-y-0.5" style={{ color: "inherit" }}>
-      <p className="mono text-xs" style={{ color: "var(--accent)" }}>{p.modelCode}</p>
-      <h3 className="mt-1">{p.name}</h3>
+    <Link href={`/products/${p.slug}`} data-sector={p.sector} className="card hover-lift block no-underline" style={{ color: "inherit", borderTop: "3px solid var(--sector)" }}>
+      <div className="mb-3 flex items-center justify-between"><p className="mono text-xs" style={{ color: "var(--accent)" }}>{p.modelCode}</p><AvailabilityBadge a={p.availability} /></div>
+      <div className="mb-3 flex h-28 items-center justify-center rounded-[10px]" style={{ background: "var(--sector-soft)" }}><DeviceArt kind={p.device} className="h-24 w-auto" /></div>
+      <h3 className="mt-1 !text-[1.05rem]">{p.name}</h3>
       <p className="text-sm">{p.buyers.slice(0, 3).join(", ")}</p>
-      <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>{note ?? `Kit from ${inr(p.hardwareFromInr)}. Plans from ₹299 per device per month.`}</p>
+      {note && <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>{note}</p>}
     </Link>
   );
 }
 
 export function SpecTable({ p }: { p: Product }) {
-  const rows: [string, string][] = [["Model", p.modelCode], ["Sensors", p.hardware.sensors.join("; ")], ["Connectivity", p.hardware.connectivity.join("; ")], ["Power", p.hardware.power], ["Kit price (indicative)", `${inr(p.hardwareFromInr)} to ${inr(p.hardwareToInr)}, excluding GST`], ["Report", p.reportName]];
-  return <table className="table-ca"><tbody>{rows.map(([k, v]) => <tr key={k}><th scope="row" className="w-40">{k}</th><td>{v}</td></tr>)}</tbody></table>;
+  const groups = Array.from(new Set(p.specs.map((x) => x.group ?? "General")));
+  return (
+    <div className="overflow-x-auto">
+      <table className="table-ca min-w-[560px]">
+        <thead><tr><th>Specification</th><th>Value</th><th>Status</th></tr></thead>
+        <tbody>
+          {groups.map((g) => (
+            <Fragment key={g}>
+              {groups.length > 1 && <tr><th colSpan={3} className="kicker !bg-transparent">{g}</th></tr>}
+              {p.specs.filter((x) => (x.group ?? "General") === g).map((x) => (
+                <tr key={x.label}><th scope="row" className="w-48">{x.label}</th><td>{x.value}{x.note && <span className="block text-xs" style={{ color: "var(--text-muted)" }}>{x.note}</span>}</td><td><span className={`spec-chip spec-${x.status}`}>{x.status === "design-target" ? "Design target" : x.status === "to-confirm" ? "To confirm" : "Confirmed"}</span></td></tr>
+              ))}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>Design targets are planned values and are not guaranteed. Items marked &ldquo;To confirm&rdquo; are not yet verified. Ask us for the current datasheet before you rely on a figure.</p>
+    </div>
+  );
 }
 
 export function AlertExample({ text, title = "Example alert" }: { text: string; title?: string }) {

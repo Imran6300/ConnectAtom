@@ -5,13 +5,12 @@ import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recapt
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { api, toApiError } from "@/lib/api";
 import { readOrigin, getFlag } from "@/lib/attribution";
-import { LIVE_PRODUCTS } from "@/content/products";
 
 type Kind = "quote" | "pilot" | "callback" | "contact";
-type Props = { kind?: Kind; productSlug?: string; industrySlug?: string; citySlug?: string; heading?: string; cta?: string; compact?: boolean; contextLabel?: string };
+type Props = { kind?: Kind; productSlug?: string; industrySlug?: string; citySlug?: string; heading?: string; cta?: string; compact?: boolean; contextLabel?: string; products?: { slug: string; name: string }[] };
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
-function Inner({ kind = "quote", productSlug, industrySlug, citySlug, cta, compact }: Props) {
+function Inner({ kind = "quote", productSlug, industrySlug, citySlug, cta, compact, products = [] }: Props) {
   const router = useRouter();
   const path = usePathname();
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -65,7 +64,7 @@ function Inner({ kind = "quote", productSlug, industrySlug, citySlug, cta, compa
           <label className="label" htmlFor="product">What do you want to monitor?</label>
           <select id="product" name="product" className="input" defaultValue="">
             <option value="">Not sure yet</option>
-            {LIVE_PRODUCTS.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
+            {products.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
           </select>
         </div>
       )}
