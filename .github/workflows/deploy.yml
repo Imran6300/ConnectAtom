@@ -26,31 +26,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Vinext for Cloudflare
-        run: npm run build:vinext
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Inspect generated Cloudflare output
-        run: |
-          echo "Root directory:"
-          ls -la
-          echo "Generated output directories:"
-          find . -maxdepth 5 -type d \( -name ".cloudflare" -o -name "output" -o -name "workers" \) -print
-          echo "Generated configuration files:"
-          find . -maxdepth 7 -type f \( -name "wrangler.json" -o -name "wrangler.toml" -o -name "config.json" \) -print
-          echo "Dist directory:"
-          ls -la dist || true
-
-      - name: Deploy Response Store
-        run: npm run deploy:response-store
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Deploy ConnectAtom Worker
-        run: npx vinext-cloudflare deploy --skip-build
+      - name: Build and deploy ConnectAtom
+        run: npm run deploy:vinext
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
