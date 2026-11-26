@@ -37,6 +37,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vinext/cloudflare": "^1.4.0",
+    "@vitejs/plugin-react": "^5.1.4",
     "@vitejs/plugin-rsc": "^0.5.39",
     "autoprefixer": "^10.4.20",
     "cf": "^1.0.0-rc.6",
