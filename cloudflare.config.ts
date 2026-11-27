@@ -26,9 +26,9 @@ export default defineConfig({
   ...responseStore.applicationWorker.env,
   ASSETS: bindings.assets(),
   IMAGES: bindings.images(),
-  NEXT_PUBLIC_SITE_URL: "https://connectatom.com",
-  NEXT_PUBLIC_LEGAL_REVIEWED: "true",
-  NEXT_PUBLIC_GA_DEBUG: "false",
+  NEXT_PUBLIC_SITE_URL: bindings.text("https://connectatom.com"),
+  NEXT_PUBLIC_LEGAL_REVIEWED: bindings.text("true"),
+  NEXT_PUBLIC_GA_DEBUG: bindings.text("false"),
 },
   }),
 });
