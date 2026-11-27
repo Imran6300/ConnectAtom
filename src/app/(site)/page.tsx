@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getSite } from "@/lib/catalogue/site";
 import { metaFor } from "@/lib/seo/metadata";
 import { SECTORS, SECTOR_META } from "@/lib/catalogue/types";
-import { DeviceCard } from "@/components/marketing/DeviceCard";
-import { CtaBand, CtaRow, FaqBlock, HowItWorks, PlanTable, ProofStrip, ProductCard } from "@/components/marketing/blocks";
+import { Hero } from "@/components/hero/Hero";
+import { CtaBand, FaqBlock, HowItWorks, PlanTable, ProofStrip, ProductCard } from "@/components/marketing/blocks";
 import { Band, SectionHead } from "@/components/ui/primitives";
 import { Grid, ResourceCard } from "@/components/marketing/linkcards";
 import { Scene } from "@/components/visuals";
@@ -23,18 +23,7 @@ export default async function Home() {
   const resources = s.resources.filter((r) => r.type !== "glossary").slice(0, 4);
   return (
     <>
-      <section data-theme="dark" className="circuit-bg">
-        <div className="container-x grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <p className="eyebrow rise">Wireless monitoring for cold rooms, clinics and kitchens</p>
-            <h1 className="display rise rise-2">Know before<br />it fails.</h1>
-            <p className="lede rise rise-3 mt-4" style={{ color: "var(--text-body)" }}>Live readings and a WhatsApp alert the moment something drifts. Installed and supported for you.</p>
-            <CtaRow secondary={{ href: "/how-it-works", label: "See how it works" }} />
-            <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>30-day money-back pilot. No long contract.</p>
-          </div>
-          <DeviceCard />
-        </div>
-      </section>
+      <Hero />
       <ProofStrip />
       <Band>
         <SectionHead eyebrow="Find your industry" title="Monitoring shaped by the place it runs in" lede={`${s.industries.length} industries, ${s.products.length} products. Pick the one that looks like your site.`} />
